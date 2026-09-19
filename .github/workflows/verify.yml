@@ -1,0 +1,37 @@
+name: verify claims
+
+# Re-checks every claim in evidence.json against the source it names. A claim
+# that stops being true turns this red, so the badge on the README is a live
+# statement about whether the claims below it still hold.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Mondays, 06:00 UTC: a leaderboard position or a pull-request state can
+    # change while nothing is pushed here.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # The checks read public sources over the unauthenticated GitHub API, so
+      # this job needs no credentials. GH_TOKEN is passed only so the script can
+      # fall back to `gh` if the anonymous hourly limit is hit.
+      - name: Verify every claim against its source
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 verify_evidence.py
