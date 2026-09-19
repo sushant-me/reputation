@@ -16,135 +16,276 @@
       "category": "recognition",
       "claim": "Rank 1 on the HackingHub Q3 2026 global leaderboard",
       "detail": "116 flags and 11,860 XP, with 2 silver and 1 bronze award. The next-ranked account holds 97 flags / 10,095 XP.",
-      "source": { "kind": "api", "url": "https://api.hackinghub.io/leaderboard", "note": "public JSON, period 3-2026" },
-      "verification": { "method": "hackinghub_rank", "expect": { "username": "nofear976", "rank": 1, "flags": 116, "xp": 11860 } },
-      "metrics": ["116 flags", "11,860 XP", "2 silver + 1 bronze award"]
+      "source": {
+        "kind": "api",
+        "url": "https://api.hackinghub.io/leaderboard",
+        "note": "public JSON, period 3-2026"
+      },
+      "verification": {
+        "method": "hackinghub_rank",
+        "expect": {
+          "username": "nofear976",
+          "rank": 1,
+          "flags": 116,
+          "xp": 11860
+        }
+      },
+      "metrics": [
+        "116 flags",
+        "11,860 XP",
+        "2 silver + 1 bronze award"
+      ]
     },
     {
       "id": "go-github-merged",
       "category": "open-source",
       "claim": "Pull request merged into google/go-github",
       "detail": "Release-asset uploads are rejected when the upload URL's host differs from the configured upload host. Approved and merged by the project maintainer gmlewis on 2026-09-17 with the full CI matrix green.",
-      "source": { "kind": "github_pr", "url": "https://github.com/google/go-github/pull/4556", "repo": "google/go-github", "number": 4556 },
-      "verification": { "method": "github_pr_merged" },
-      "metrics": ["merged 2026-09-17"]
+      "source": {
+        "kind": "github_pr",
+        "url": "https://github.com/google/go-github/pull/4556",
+        "repo": "google/go-github",
+        "number": 4556
+      },
+      "verification": {
+        "method": "github_pr_merged"
+      },
+      "metrics": [
+        "merged 2026-09-17"
+      ]
     },
     {
       "id": "s2geometry-issues",
       "category": "security-research",
       "claim": "Five open memory-safety issues in google/s2geometry, each with a standalone reproducer",
       "detail": "NULL dereference on the library's documented traversal path (#674), out-of-bounds access from an unchecked shape id (#676), a 16 GiB allocation from unchecked counts (#677), a heap-buffer-overflow in EncodedS2LaxPolygonShape::edge (#678), and a 2.4 GiB allocation reachable from a 28-byte input (#679).",
-      "source": { "kind": "github_issues", "repo": "google/s2geometry", "numbers": [674, 676, 677, 678, 679] },
-      "verification": { "method": "github_issues_open", "expect_state": "open" },
-      "metrics": ["5 issues", "2.4 GiB from 28 bytes", "16 GiB from a 5-byte header"]
+      "source": {
+        "kind": "github_issues",
+        "repo": "google/s2geometry",
+        "numbers": [
+          674,
+          676,
+          677,
+          678,
+          679
+        ]
+      },
+      "verification": {
+        "method": "github_issues_open",
+        "expect_state": "open"
+      },
+      "metrics": [
+        "5 issues",
+        "2.4 GiB from 28 bytes",
+        "16 GiB from a 5-byte header"
+      ]
     },
     {
       "id": "s2geometry-prs",
       "category": "open-source",
       "claim": "Two hardening pull requests under review in google/s2geometry, split at the maintainer's request",
       "detail": "#681 validates loop_starts when decoding a lax polygon shape; #682 bounds untrusted counts in S2ShapeIndexCell::Decode. A third change (returning an empty cell instead of nullptr) was withdrawn after AddressSanitizer showed the crash it claimed to fix was the loop_starts out-of-bounds read.",
-      "source": { "kind": "github_prs", "repo": "google/s2geometry", "numbers": [681, 682] },
-      "verification": { "method": "github_prs_open_or_merged" }
+      "source": {
+        "kind": "github_prs",
+        "repo": "google/s2geometry",
+        "numbers": [
+          681,
+          682
+        ]
+      },
+      "verification": {
+        "method": "github_prs_open_or_merged"
+      }
     },
     {
       "id": "adk-tool-shadowing",
       "category": "security-research",
       "claim": "Fixes and reports for MCP tool shadowing across Google's agent frameworks",
       "detail": "Framework-reserved tool names (google_search, set_model_response, skill and loop tools) that a server-supplied MCP tool can occupy, bypassing the duplicate-name guard. Open pull requests: adk-go #1606, adk-java #1515, adk-python #7145.",
-      "source": { "kind": "github_prs", "repo": "google/adk-go", "numbers": [1606] },
+      "source": {
+        "kind": "github_prs",
+        "repo": "google/adk-go",
+        "numbers": [
+          1606
+        ]
+      },
       "extra_sources": [
-        { "kind": "github_pr", "repo": "google/adk-java", "number": 1515 },
-        { "kind": "github_pr", "repo": "google/adk-python", "number": 7145 }
+        {
+          "kind": "github_pr",
+          "repo": "google/adk-java",
+          "number": 1515
+        },
+        {
+          "kind": "github_pr",
+          "repo": "google/adk-python",
+          "number": 7145
+        }
       ],
-      "verification": { "method": "github_prs_open_or_merged" }
+      "verification": {
+        "method": "github_prs_open_or_merged"
+      }
     },
     {
       "id": "oss-fuzz-harness",
       "category": "security-research",
       "claim": "An OSS-Fuzz harness that was testing nothing, fixed",
       "detail": "google/libphonenumber's as-you-type-formatter fuzz target asserted 0.00% line coverage of the code it was meant to exercise because it never generated a valid region or digit; the corrected harness reaches 93%.",
-      "source": { "kind": "github_pr", "repo": "google/libphonenumber", "number": 4079 },
-      "verification": { "method": "github_pr_open_or_merged" },
-      "metrics": ["0.00% -> 93% line coverage"]
+      "source": {
+        "kind": "github_pr",
+        "repo": "google/libphonenumber",
+        "number": 4079
+      },
+      "verification": {
+        "method": "github_pr_open_or_merged"
+      },
+      "metrics": [
+        "0.00% -> 93% line coverage"
+      ]
     },
     {
       "id": "gson-surrogates",
       "category": "open-source",
       "claim": "Reject unpaired surrogates in gson JsonWriter STRICT mode",
-      "source": { "kind": "github_pr", "repo": "google/gson", "number": 3121 },
-      "verification": { "method": "github_pr_open_or_merged" }
+      "source": {
+        "kind": "github_pr",
+        "repo": "google/gson",
+        "number": 3121
+      },
+      "verification": {
+        "method": "github_pr_open_or_merged"
+      }
     },
     {
       "id": "paper-semantic-firewall",
       "category": "publication",
       "claim": "Edge-Native Semantic Firewall for Autonomous LLM Agents: A Structured Chain-of-Thought Verification Framework",
       "detail": "Accepted; camera-ready in progress; to be presented at NCIT. Co-authors R. Pandey and A. Pandey, Department of Computer Science and Engineering, Nepal Engineering College. A 3.8B model (Phi-3-mini, 4-bit) on one consumer laptop inside a 4.2 GiB VRAM budget, 600 policy scenarios per condition, no cloud inference. JSON-constrained output without a reasoning field was the least safe evaluator (46.2% unsafe accepts vs 17.2% unconstrained); the structured CoT arm cut false accepts of irreversible hard-denial commands from 71 to 6 and reached 66.3% decision accuracy.",
-      "source": { "kind": "public_repo", "url": "https://github.com/sushant-me/Edge-Native_Semantic_Firewall_" },
-      "verification": { "method": "public_repo_exists" },
-      "metrics": ["600 scenarios/condition", "46.2% vs 17.2% unsafe accepts", "71 -> 6 hard-denial false accepts", "66.3% decision accuracy", "4.2 GiB VRAM"]
+      "source": {
+        "kind": "public_repo",
+        "url": "https://github.com/sushant-me/Edge-Native_Semantic_Firewall_"
+      },
+      "verification": {
+        "method": "public_repo_exists"
+      },
+      "metrics": [
+        "600 scenarios/condition",
+        "46.2% vs 17.2% unsafe accepts",
+        "71 -> 6 hard-denial false accepts",
+        "66.3% decision accuracy",
+        "4.2 GiB VRAM"
+      ]
     },
     {
       "id": "paper-prebas",
       "category": "publication",
       "claim": "PREBAS: Preemptive Bandwidth Scaling for WebRTC in LEO Satellite Networks Using Lightweight Neural Prediction",
       "detail": "Accepted, 2026 IEEE RTC, Chicago, USA.",
-      "source": { "kind": "submission_portal", "note": "Acceptance row visible in the conference submission portal; no public URL. Acceptance documentation available on request." },
-      "verification": { "method": "human_asserted", "on_request": "conference acceptance notification" }
+      "source": {
+        "kind": "submission_portal",
+        "note": "Acceptance row visible in the conference submission portal; no public URL. Acceptance documentation available on request."
+      },
+      "verification": {
+        "method": "human_asserted",
+        "on_request": "conference acceptance notification"
+      }
     },
     {
       "id": "atmos-ai-engineer",
       "category": "experience",
       "claim": "AI Engineer at Atmos SoftTech Pvt. Ltd., Birgunj, Nepal, March 2024 - March 2026 (2 years, full-time)",
       "detail": "Designed and deployed AI/ML systems in production; built and maintained full-stack web applications; engineered autonomous agent pipelines including offline-first inference. Conduct rated highly satisfactory in the company's signed experience letter (Md. Samsad Ali, CEO).",
-      "source": { "kind": "private_document", "note": "signed experience letter on file; available on request." },
-      "verification": { "method": "human_asserted", "on_request": "signed experience letter" }
+      "source": {
+        "kind": "private_document",
+        "note": "signed experience letter on file; available on request."
+      },
+      "verification": {
+        "method": "human_asserted",
+        "on_request": "signed experience letter"
+      }
     },
     {
       "id": "tool-policygate",
       "category": "open-source",
       "claim": "policygate - a fail-closed policy gate for agent tool calls, built so a language model can never authorise an action",
-      "detail": "Rules are evaluated by severity rather than file order; ALLOW is produced only by an allow rule; a model may deny or escalate but its ALLOW on an uncovered call is overruled and recorded; a failing or unparseable model falls through to the refusing default; every decision goes to a hash-chained audit log. Verified by mutation: weakening the model-allow invariant fails three tests.",
-      "source": { "kind": "public_repo", "url": "https://github.com/sushant-me/policygate" },
-      "verification": { "method": "public_repo_exists" },
-      "metrics": ["32 tests", "stdlib only", "CI on Python 3.11-3.13"]
+      "detail": "Rules are evaluated by severity rather than file order; ALLOW is produced only by an allow rule; a model may deny or escalate but its ALLOW on an uncovered call is overruled and recorded; a failing or unparseable evaluator falls through to the refusing default; every decision goes to a hash-chained audit log. Adapters wrap MCP-style servers, LangChain-style tools and provider-shaped function calls, duck-typed so no framework becomes a dependency. Verified by mutation: weakening either the model-allow invariant or the unparseable-call path fails six tests.",
+      "source": {
+        "kind": "public_repo",
+        "url": "https://github.com/sushant-me/policygate"
+      },
+      "verification": {
+        "method": "public_repo_exists"
+      },
+      "metrics": [
+        "58 tests",
+        "stdlib only",
+        "CI on Python 3.11-3.13",
+        "MCP + LangChain + function-call adapters"
+      ]
     },
     {
       "id": "tool-agentbound",
       "category": "open-source",
       "claim": "agentbound - static detector for AI-agent tool-boundary bugs",
       "detail": "Five rules across Python, TypeScript and YAML for tool shadowing, reserved-name collisions, last-wins tool dictionaries and fail-open confirmation gates; each rule grounded in a real finding.",
-      "source": { "kind": "public_repo", "url": "https://github.com/sushant-me/agentbound" },
-      "verification": { "method": "public_repo_exists" }
+      "source": {
+        "kind": "public_repo",
+        "url": "https://github.com/sushant-me/agentbound"
+      },
+      "verification": {
+        "method": "public_repo_exists"
+      }
     },
     {
       "id": "tool-mcp-nameguard",
       "category": "open-source",
       "claim": "mcp-nameguard - check an MCP server's tool names against the names agent frameworks reserve",
-      "source": { "kind": "public_repo", "url": "https://github.com/sushant-me/mcp-nameguard" },
-      "verification": { "method": "public_repo_exists" }
+      "source": {
+        "kind": "public_repo",
+        "url": "https://github.com/sushant-me/mcp-nameguard"
+      },
+      "verification": {
+        "method": "public_repo_exists"
+      }
     },
     {
       "id": "tool-trajectorycheck",
       "category": "open-source",
       "claim": "trajectorycheck - trajectory-level evaluation for AI agents",
       "detail": "Grades tool calls, arguments, side effects and injected instructions over a run, with a deliberately broken agent as a control.",
-      "source": { "kind": "public_repo", "url": "https://github.com/sushant-me/trajectorycheck" },
-      "verification": { "method": "public_repo_exists" }
+      "source": {
+        "kind": "public_repo",
+        "url": "https://github.com/sushant-me/trajectorycheck"
+      },
+      "verification": {
+        "method": "public_repo_exists"
+      }
     },
     {
       "id": "hult-prize",
       "category": "recognition",
       "claim": "Two-time Hult Prize 1st Runner-Up (2024 and 2025); Aspire Leaders Program Global Finalist (2025)",
       "detail": "Aspire: selected among roughly 10,000 finalists from 54,000+ applicants, leadership training co-created by Harvard Business School faculty.",
-      "source": { "kind": "private_document", "note": "certificates on file; available on request." },
-      "verification": { "method": "human_asserted", "on_request": "award certificates" }
+      "source": {
+        "kind": "private_document",
+        "note": "certificates on file; available on request."
+      },
+      "verification": {
+        "method": "human_asserted",
+        "on_request": "award certificates"
+      }
     },
     {
       "id": "education",
       "category": "education",
       "claim": "Bachelor in Computer Engineering, Nepal Engineering College (NEC), Bhaktapur - final year",
-      "source": { "kind": "private_document", "note": "enrolled student; transcript available on request." },
-      "verification": { "method": "human_asserted", "on_request": "transcript" }
+      "source": {
+        "kind": "private_document",
+        "note": "enrolled student; transcript available on request."
+      },
+      "verification": {
+        "method": "human_asserted",
+        "on_request": "transcript"
+      }
     }
   ]
 }
