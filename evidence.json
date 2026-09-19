@@ -204,6 +204,25 @@
       }
     },
     {
+      "id": "tool-boundary-corpus",
+      "category": "open-source",
+      "claim": "tool-boundary-corpus - a labelled corpus of agent tool-boundary cases and a detector-agnostic harness that scores precision and recall",
+      "detail": "18 cases (13 tool-list declarations, 5 framework-code) with positives citing where each pattern came from in the real world and negatives that are the correct implementation of the same job. Detectors are commands that print JSON, so any scanner can be scored. Measured: mcpaudit P=1.000 R=1.000 on tool-list, agentbound P=0.750 R=1.000 on code \u2014 the false positive is real and named in CI. The harness is itself tested with fake detectors (perfect, silent, trigger-happy, crashing, malformed JSON), and the corpus is self-authored, which every report states.",
+      "source": {
+        "kind": "public_repo",
+        "url": "https://github.com/sushant-me/tool-boundary-corpus"
+      },
+      "verification": {
+        "method": "public_repo_exists"
+      },
+      "metrics": [
+        "18 cases",
+        "P/R measured for 2 detectors",
+        "CI on 3.11-3.13",
+        "22 tests"
+      ]
+    },
+    {
       "id": "tool-mcpaudit",
       "category": "open-source",
       "claim": "mcpaudit - review an MCP server's tool declarations before connecting, and pin them so a later change is visible",
