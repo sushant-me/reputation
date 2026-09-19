@@ -266,7 +266,7 @@
       "id": "tool-agentbound",
       "category": "open-source",
       "claim": "agentbound - static detector for AI-agent tool-boundary bugs",
-      "detail": "Five rules across Python, TypeScript and YAML for tool shadowing, reserved-name collisions, last-wins tool dictionaries and fail-open confirmation gates; each rule grounded in a real finding. Current release v0.1.11, whose CLI reports the version it actually is: v0.1.10 shipped with `__version__` still at 0.1.9, so the release, the tag and `agentbound --version` disagreed, and a test now compares the two version strings. That release's predecessor, v0.1.10, fixed a false positive found by sushant-me/tool-boundary-corpus: a string bound to a name is prose, not code.",
+      "detail": "Five rules across Python, TypeScript and YAML for tool shadowing, reserved-name collisions, last-wins tool dictionaries and fail-open confirmation gates; each rule grounded in a real finding. v0.1.11 is the current release and fixes a release that reported the wrong version: v0.1.10 shipped with `__version__` still at 0.1.9, so the tag, the release name and `agentbound --version` disagreed, and a test now compares the two version strings. The false positive that v0.1.10 fixed was found by sushant-me/tool-boundary-corpus: a string bound to a name is prose, not code.",
       "source": {
         "kind": "public_repo",
         "url": "https://github.com/sushant-me/agentbound"
