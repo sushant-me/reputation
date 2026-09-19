@@ -68,10 +68,12 @@
         &nbsp;·&nbsp; <a href="https://app.hackinghub.io/p/nofear976">profile</a></td>
     </tr>
     <tr>
-      <td class="what"><span class="num">Patch merged into <code>google/go-github</code></span> —
-        release-asset uploads are rejected when the upload URL's host differs from the configured host;
-        approved by maintainer <code>gmlewis</code>, full CI matrix green</td>
-      <td class="where"><a href="https://github.com/google/go-github/pull/4556">PR #4556</a> (merged 2026-09-17)</td>
+      <td class="what"><span class="num">Security patch authored, merged, then generalised into <code>google/go-github</code></span> —
+        my change stopped a release-asset upload being sent to an off-host URL; the maintainer
+        replaced it the next day with the broader rule <i>"credentials are sent only to configured
+        origins"</i>, which is what master implements today and which carries the commit
+        <i>"Address feedback from sushant-me"</i></td>
+      <td class="where"><a href="https://github.com/google/go-github/pull/4556">#4556</a> (merged 2026-09-17) · <a href="https://github.com/google/go-github/pull/4564">#4564</a></td>
     </tr>
     <tr>
       <td class="what"><span class="num">Five memory-safety issues in <code>google/s2geometry</code></span> —
