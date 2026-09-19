@@ -207,7 +207,7 @@
       "id": "tool-mcpaudit",
       "category": "open-source",
       "claim": "mcpaudit - review an MCP server's tool declarations before connecting, and pin them so a later change is visible",
-      "detail": "Static audit of a tools/list payload: reserved-name collisions (critical), instruction-shaped text, invisible Unicode with the tag-block payload decoded, look-alike tool names, destructive tools declaring readOnlyHint, unconstrained sink parameters. Silent on a well-behaved server, which is a test. A lock file with per-field hashes reports drift, including a changed description.",
+      "detail": "Static audit of a tools/list payload: reserved-name collisions (critical), instruction-shaped text, invisible Unicode with the tag-block payload decoded, look-alike tool names, destructive tools declaring readOnlyHint, unconstrained sink parameters. Silent on a well-behaved server, which is a test. A lock file with per-field hashes reports drift, including a changed description. It can also emit a starting policygate policy from the same declarations (deny/escalate/allow mapped from severity), which the integration tests load with the real policygate loader in CI. Writing the generator exposed a supply-chain bug in it: the tool name is attacker-controlled text written into the policy, and unescaped it could inject its own allow rule; every interpolated value is escaped now, with four regression tests.",
       "source": {
         "kind": "public_repo",
         "url": "https://github.com/sushant-me/mcpaudit"
@@ -216,10 +216,11 @@
         "method": "public_repo_exists"
       },
       "metrics": [
-        "41 tests",
+        "71 tests",
         "stdlib only",
         "CI on Python 3.11-3.13",
-        "11 checks"
+        "11 checks",
+        "generates policygate policies"
       ]
     },
     {
