@@ -103,6 +103,86 @@ def check_github_pr_merged(claim: dict) -> tuple[str, str]:
     return PASS, f"merged {str(pr.get('merged_at'))[:10]} by {who}"
 
 
+def check_github_pr_superseded_no_credit(claim: dict) -> tuple[str, str]:
+    """The go-github claim, which has four separate facts and one of them is negative.
+
+    My PR was merged, then reverted the next day by the maintainer's broader
+    replacement. Every part of that is public, and a claim that says only
+    "merged" describes behaviour that is no longer in master — a reader who
+    checks the code would find the check gone. So all four are checked:
+
+      1. #4556 is merged and authored by me;
+      2. #4564 is merged, and master implements the replacement (`AllowedOrigins`);
+      3. the maintainer's co-author promise is public, at the source;
+      4. the promised credit has NOT landed.
+
+    (4) is a negative fact, which is exactly why it is checked rather than
+    asserted: the moment the trailer appears, this claim becomes the wrong claim
+    and the verifier has to go red so it gets rewritten. A claim that something
+    is still owed is the kind that rots silently.
+    """
+    source = claim["source"]
+    repo = source["repo"]
+    mine, theirs = source["number"], claim["replacement"]["number"]
+
+    pr = _pr(repo, mine)
+    if pr is None or not pr.get("merged"):
+        return FAIL, f"{repo}#{mine} is not merged"
+    # The REST API spells this `user`; `author` is what `gh pr view --json` calls it.
+    opener = (pr.get("user") or pr.get("author") or {}).get("login")
+    if opener != source.get("author"):
+        return FAIL, f"{repo}#{mine} authored by {opener}, not {source.get('author')}"
+
+    replacement = _pr(repo, theirs)
+    if replacement is None or not replacement.get("merged"):
+        return FAIL, f"replacement {repo}#{theirs} is not merged"
+
+    blob = gh_api(f"repos/{repo}/contents/{claim['replacement']['in_master']}")
+    if not isinstance(blob, dict) or "content" not in blob:
+        return FAIL, f"could not read {claim['replacement']['in_master']}"
+    import base64
+    try:
+        master = base64.b64decode(blob["content"]).decode("utf-8", "replace")
+    except (ValueError, KeyError):
+        return FAIL, "master file did not decode"
+    if claim["replacement"]["marker"] not in master:
+        return FAIL, (
+            f"master's {claim['replacement']['in_master']} has no "
+            f"{claim['replacement']['marker']!r}: the fix may have moved or regressed"
+        )
+
+    # The promise, at the source. A paraphrase of a person's words is not evidence.
+    comments = gh_api(f"repos/{repo}/issues/{claim['promise_at']['number']}/comments")
+    if not isinstance(comments, list):
+        return FAIL, f"could not read comments on #{claim['promise_at']['number']}"
+    promised = any(claim["promise_at"]["phrase"] in (c.get("body") or "") for c in comments)
+    if not promised:
+        return FAIL, (
+            f"the co-author promise is no longer in #{claim['promise_at']['number']}: "
+            "either it was edited or this check looks in the wrong place"
+        )
+
+    # The negative half.
+    merge = gh_api(f"repos/{repo}/commits/{replacement['merge_commit_sha']}")
+    message = ((merge or {}).get("commit") or {}).get("message", "")
+    if "sushant" in message.lower():
+        return FAIL, (
+            "the promised co-author credit has LANDED in the merged commit — "
+            "rewrite this claim, it now understates"
+        )
+    for release in gh_api(f"repos/{repo}/releases") or []:
+        if "sushant" in (release.get("body") or "").lower():
+            return FAIL, (
+                f"release {release.get('tag_name')} now credits me — rewrite this claim, "
+                "it now understates"
+            )
+
+    return PASS, (
+        f"#{mine} merged {str(pr.get('merged_at'))[:10]} then superseded by "
+        f"#{theirs}; master has the replacement; credit promised publicly, not yet in the commit"
+    )
+
+
 def check_github_pr_open_or_merged(claim: dict) -> tuple[str, str]:
     source = claim["source"]
     pr = _pr(source["repo"], source["number"])
@@ -168,6 +248,7 @@ def check_public_repo_exists(claim: dict) -> tuple[str, str]:
 CHECKS = {
     "hackinghub_rank": check_hackinghub_rank,
     "github_pr_merged": check_github_pr_merged,
+    "github_pr_superseded_no_credit": check_github_pr_superseded_no_credit,
     "github_pr_open_or_merged": check_github_pr_open_or_merged,
     "github_prs_open_or_merged": check_github_prs_open_or_merged,
     "github_issues_open": check_github_issues_open,

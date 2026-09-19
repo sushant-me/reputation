@@ -39,19 +39,39 @@
     {
       "id": "go-github-merged",
       "category": "open-source",
-      "claim": "Pull request merged into google/go-github",
-      "detail": "Release-asset uploads are rejected when the upload URL's host differs from the configured upload host. Approved and merged by the project maintainer gmlewis on 2026-09-17 with the full CI matrix green.",
+      "claim": "Security fix authored, merged, then superseded into google/go-github",
+      "detail": "I authored #4556, which was merged by maintainer gmlewis on 2026-09-17: an upload whose URL pointed at a different host than the configured upload host was refused rather than sent with the client's credentials. He reverted it the next day in favour of his broader #4564, which now enforces the general rule in master ('credentials are sent only to configured origins', via AllowedOrigins in github/github.go) and which says verbatim in its own description: 'generalizing what #4556 did in one (thanks @sushant-me)'. #4564 also carries a merged commit titled 'Address feedback from sushant-me' - I reviewed the replacement and my feedback was adopted. He stated publicly on #4366 that he would carry the fixes and credit @sushant-me as a co-author; that credit has NOT yet landed, so it is not claimed. The superseded PR and its replacement are both linked, because 'merged' alone would describe code that is no longer in master.",
       "source": {
         "kind": "github_pr",
         "url": "https://github.com/google/go-github/pull/4556",
         "repo": "google/go-github",
-        "number": 4556
+        "number": 4556,
+        "author": "sushant-me"
       },
+      "replacement": {
+        "number": 4564,
+        "in_master": "github/github.go",
+        "marker": "AllowedOrigins"
+      },
+      "promise_at": {
+        "number": 4366,
+        "phrase": "credit @huynhtrungcsc and @sushant-me as co-authors"
+      },
+      "extra_sources": [
+        {
+          "kind": "github_pr",
+          "url": "https://github.com/google/go-github/pull/4564",
+          "repo": "google/go-github",
+          "number": 4564
+        }
+      ],
       "verification": {
-        "method": "github_pr_merged"
+        "method": "github_pr_superseded_no_credit"
       },
       "metrics": [
-        "merged 2026-09-17"
+        "merged 2026-09-17, superseded 2026-09-18",
+        "replacement in master",
+        "co-author credit promised, not yet landed"
       ]
     },
     {
