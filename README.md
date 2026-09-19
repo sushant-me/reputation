@@ -19,7 +19,7 @@ on-request  PREBAS accepted, 2026 IEEE RTC (Chicago)                  acceptance
 Run it yourself:
 
 ```bash
-python3 verify_evidence.py          # 15 claims, live
+python3 verify_evidence.py          # 18 claims: 14 checked live, 4 on request
 python3 verify_evidence.py --json    # same, machine-readable
 ```
 
