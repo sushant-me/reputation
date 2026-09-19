@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sushant Poudel — Evidence Sheet</title>
+<style>
+  :root{--ink:#14181f;--muted:#5b6472;--rule:#d7dce4;--accent:#0b3d91;--accent2:#0d6b5f}
+  *{box-sizing:border-box}
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{margin:0;color:var(--ink);background:#fff;
+       font:10.2pt/1.4 "Inter","Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .page{max-width:210mm;margin:0 auto;padding:14mm 14mm 12mm}
+  h1{font-size:21pt;margin:0;letter-spacing:-.5pt;font-weight:800}
+  .role{margin:2px 0 0;font-size:10.6pt;color:var(--accent2);font-weight:650}
+  .contact{margin:5px 0 0;font-size:9.2pt;color:var(--muted)}
+  .contact b{color:var(--ink)}
+  .sep{color:var(--rule);padding:0 5px}
+  header{border-bottom:2.2px solid var(--ink);padding-bottom:7px}
+  h2{font-size:9.4pt;text-transform:uppercase;letter-spacing:1.5pt;font-weight:800;color:var(--accent);
+     margin:13px 0 5px;padding-bottom:3px;border-bottom:1px solid var(--rule)}
+  table{width:100%;border-collapse:collapse;font-size:9.3pt}
+  td{vertical-align:top;padding:3.5px 0;border-bottom:1px solid #eef1f5}
+  td.what{width:47%;padding-right:10px}
+  td.where{width:53%;color:var(--muted)}
+  a{color:var(--accent);text-decoration:none;word-break:break-word}
+  .num{font-weight:700}
+  ul{margin:3px 0 0;padding-left:15px}
+  li{margin:1.5px 0}
+  p{margin:4px 0}
+  .verify{background:#f5f8fc;border:1px solid #dbe3ef;border-radius:4px;padding:7px 9px;margin-top:6px;font-size:9.2pt}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:8.9pt;background:#eef2f8;padding:0 3px;border-radius:2px}
+  footer{margin-top:11px;padding-top:6px;border-top:1px solid var(--rule);font-size:8.6pt;color:var(--muted)}
+  @page{size:A4;margin:0}
+  @media print{body{font-size:9.7pt}.page{padding:11mm 12mm 9mm}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>Sushant Poudel</h1>
+    <p class="role">AI Security &amp; Agent Safety · Applied AI Engineering</p>
+    <p class="contact">
+      Kathmandu, Nepal <span class="sep">|</span> <b>+977 9863635324</b>
+      <span class="sep">|</span> sushant.poudel2028@gmail.com<br>
+      github.com/sushant-me <span class="sep">|</span> linkedin.com/in/sushant-poudel2028
+      <span class="sep">|</span> sushantpoudel2028.com.np
+      <span class="sep">|</span> HackingHub: nofear976
+    </p>
+  </header>
+
+  <h2>Why this page looks like this</h2>
+  <p>
+    A CV asks you to take its claims on trust. This one does not. Every entry below names the public
+    source it came from, and all of them are re-checked against those sources once a week by a script
+    in <a href="https://github.com/sushant-me/reputation">github.com/sushant-me/reputation</a>, which
+    fails the moment one stops being true. Claims that cannot be checked from outside — a signed
+    experience letter, a conference acceptance email — are marked <b>on request</b> rather than mixed
+    in with the verified ones.
+  </p>
+
+  <h2>Verified, with the source beside it</h2>
+  <table>
+    <tr>
+      <td class="what"><span class="num">Rank #1, HackingHub Q3 2026</span> global leaderboard —
+        116 flags, 11,860 XP, 2 silver + 1 bronze award (next account: 97 flags)</td>
+      <td class="where"><a href="https://api.hackinghub.io/leaderboard">api.hackinghub.io/leaderboard</a>
+        &nbsp;·&nbsp; <a href="https://app.hackinghub.io/p/nofear976">profile</a></td>
+    </tr>
+    <tr>
+      <td class="what"><span class="num">Patch merged into <code>google/go-github</code></span> —
+        release-asset uploads are rejected when the upload URL's host differs from the configured host;
+        approved by maintainer <code>gmlewis</code>, full CI matrix green</td>
+      <td class="where"><a href="https://github.com/google/go-github/pull/4556">PR #4556</a> (merged 2026-09-17)</td>
+    </tr>
+    <tr>
+      <td class="what"><span class="num">Five memory-safety issues in <code>google/s2geometry</code></span> —
+        NULL dereference on the documented traversal path, out-of-bounds read, 16 GiB allocation from a
+        5-byte header, and a <b>2.4 GiB allocation reachable from a 28-byte input</b>. Each filed with a
+        standalone reproducer.</td>
+      <td class="where">issues <a href="https://github.com/google/s2geometry/issues/674">#674</a>,
+        <a href="https://github.com/google/s2geometry/issues/676">#676</a>,
+        <a href="https://github.com/google/s2geometry/issues/677">#677</a>,
+        <a href="https://github.com/google/s2geometry/issues/678">#678</a>,
+        <a href="https://github.com/google/s2geometry/issues/679">#679</a></td>
+    </tr>
+    <tr>
+      <td class="what"><span class="num">Two hardening pull requests under review</span> in
+        <code>google/s2geometry</code>, split into independent changes at the maintainer's request;
+        a third was withdrawn after AddressSanitizer showed it did not fix the crash it claimed to</td>
+      <td class="where"><a href="https://github.com/google/s2geometry/pull/681">#681</a> ·
+        <a href="https://github.com/google/s2geometry/pull/682">#682</a></td>
+    </tr>
+    <tr>
+      <td class="what"><span class="num">MCP tool-shadowing fixes</span> open against three of Google's
+        agent frameworks — framework-reserved tool names that a server-supplied tool can occupy,
+        bypassing the duplicate-name guard</td>
+      <td class="where"><a href="https://github.com/google/adk-go/pull/1606">adk-go #1606</a> ·
+        <a href="https://github.com/google/adk-java/pull/1515">adk-java #1515</a> ·
+        <a href="https://github.com/google/adk-python/pull/7145">adk-python #7145</a></td>
+    </tr>
+    <tr>
+      <td class="what"><span class="num">An OSS-Fuzz harness that was testing nothing</span> —
+        <code>google/libphonenumber</code>'s as-you-type formatter asserted <b>0.00% line coverage</b> of
+        the code it targeted because it never generated valid input; the corrected harness reaches
+        <b>93%</b></td>
+      <td class="where"><a href="https://github.com/google/libphonenumber/pull/4079">PR #4079</a></td>
+    </tr>
+    <tr>
+      <td class="what"><span class="num">Two IEEE papers accepted</span> — <i>Edge-Native Semantic
+        Firewall for Autonomous LLM Agents</i> (accepted; camera-ready in progress; to be presented at
+        NCIT) and <i>PREBAS: Preemptive Bandwidth Scaling for WebRTC in LEO Satellite Networks</i>
+        (2026 IEEE RTC, Chicago)</td>
+      <td class="where"><a href="https://github.com/sushant-me/Edge-Native_Semantic_Firewall_">paper, code,
+        raw model outputs</a> · PREBAS acceptance <b>on request</b></td>
+    </tr>
+    <tr>
+      <td class="what"><span class="num">Two years as an AI engineer</span> — Atmos SoftTech Pvt. Ltd.,
+        Birgunj, Nepal (March 2024 – March 2026): production AI/ML systems, full-stack web delivery, and
+        autonomous agent pipelines including offline-first inference</td>
+      <td class="where">signed experience letter <b>on request</b> (Md. Samsad Ali, CEO)</td>
+    </tr>
+    <tr>
+      <td class="what"><span class="num">Open-source tooling</span> —
+        <code>agentbound</code> (tool-boundary bug detector),
+        <code>mcp-nameguard</code> (MCP tool-name collisions),
+        <code>trajectorycheck</code> (agent trajectory evaluation)</td>
+      <td class="where"><a href="https://github.com/sushant-me/agentbound">agentbound</a> ·
+        <a href="https://github.com/sushant-me/mcp-nameguard">mcp-nameguard</a> ·
+        <a href="https://github.com/sushant-me/trajectorycheck">trajectorycheck</a></td>
+    </tr>
+  </table>
+
+  <h2>What the research found, including the result that contradicted me</h2>
+  <ul>
+    <li><b>The semantic firewall (600 scenarios per condition, Phi-3-mini 3.8B, 4-bit, 4.2 GiB VRAM budget,
+      zero cloud inference).</b> Constraining model output to JSON <i>without</i> a reasoning field made the
+      evaluator less safe, not more: 46.2% unsafe accepts against 17.2% unconstrained. Mandating a
+      Chain-of-Thought field order cut false accepts of irreversible hard-denial commands from 71 to 6 and
+      reached 66.3% decision accuracy — and still approved 6 of 208 hard denials, which the paper reports
+      rather than rounds away.</li>
+    <li><b>Measurement discipline as a method.</b> <code>beyond-attention</code> implements a selective
+      state-space model from scratch and publishes the results that do not flatter it — a scalar register
+      still ties the agent on the arithmetic families, and the state-space model is the weaker of the two
+      past its training length.</li>
+  </ul>
+
+  <div class="verify">
+    <b>Check any of this yourself in one command.</b><br>
+    <code>git clone https://github.com/sushant-me/reputation &amp;&amp; cd reputation &amp;&amp; python3 verify_evidence.py</code><br>
+    It prints one line per claim and exits non-zero if a published claim no longer holds.
+  </div>
+
+  <footer>
+    Computer Engineering, Nepal Engineering College (final year) · two-time Hult Prize 1st Runner-Up (2024,
+    2025) · Aspire Leaders Program Global Finalist · certifications: IBM AI Engineering, IBM DevOps,
+    Google Cybersecurity, Google UX Design, DeepLearning.AI Deep Learning, Stanford Machine Learning.
+    <br>Statuses are stated as their sources report them: an accepted paper with the camera-ready in
+    progress is not called published, and an open pull request is not called merged.
+  </footer>
+
+</div>
+</body>
+</html>

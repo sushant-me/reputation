@@ -100,6 +100,15 @@
       "verification": { "method": "human_asserted", "on_request": "signed experience letter" }
     },
     {
+      "id": "tool-policygate",
+      "category": "open-source",
+      "claim": "policygate - a fail-closed policy gate for agent tool calls, built so a language model can never authorise an action",
+      "detail": "Rules are evaluated by severity rather than file order; ALLOW is produced only by an allow rule; a model may deny or escalate but its ALLOW on an uncovered call is overruled and recorded; a failing or unparseable model falls through to the refusing default; every decision goes to a hash-chained audit log. Verified by mutation: weakening the model-allow invariant fails three tests.",
+      "source": { "kind": "public_repo", "url": "https://github.com/sushant-me/policygate" },
+      "verification": { "method": "public_repo_exists" },
+      "metrics": ["32 tests", "stdlib only", "CI on Python 3.11-3.13"]
+    },
+    {
       "id": "tool-agentbound",
       "category": "open-source",
       "claim": "agentbound - static detector for AI-agent tool-boundary bugs",
