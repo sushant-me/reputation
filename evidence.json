@@ -204,6 +204,25 @@
       }
     },
     {
+      "id": "tool-mcpaudit",
+      "category": "open-source",
+      "claim": "mcpaudit - review an MCP server's tool declarations before connecting, and pin them so a later change is visible",
+      "detail": "Static audit of a tools/list payload: reserved-name collisions (critical), instruction-shaped text, invisible Unicode with the tag-block payload decoded, look-alike tool names, destructive tools declaring readOnlyHint, unconstrained sink parameters. Silent on a well-behaved server, which is a test. A lock file with per-field hashes reports drift, including a changed description.",
+      "source": {
+        "kind": "public_repo",
+        "url": "https://github.com/sushant-me/mcpaudit"
+      },
+      "verification": {
+        "method": "public_repo_exists"
+      },
+      "metrics": [
+        "41 tests",
+        "stdlib only",
+        "CI on Python 3.11-3.13",
+        "11 checks"
+      ]
+    },
+    {
       "id": "tool-policygate",
       "category": "open-source",
       "claim": "policygate - a fail-closed policy gate for agent tool calls, built so a language model can never authorise an action",
