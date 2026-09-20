@@ -110,7 +110,33 @@ jobs:
       # evidence sheet and the six project READMEs. Running it with --require-all
       # on the workstation adds the CVs, job-kit and everything else. The
       # --min-surfaces floor makes a run that found nothing to read fail.
+      # pdftotext is what makes a PDF surface readable at all. It ships on the
+      # ubuntu-latest image, which is exactly why the dependency was never stated: if it
+      # were ever absent, every PDF assertion would have passed on an empty string rather
+      # than failed. Installed explicitly now, and check_surfaces.py fails when a PDF
+      # produces no text instead of reporting a clean result for a document nothing read.
+      - name: Install pdftotext (poppler-utils)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+
       - name: Check the public surfaces for stale or wrong claims
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 reputation/check_surfaces.py --min-surfaces 22
+
+      # The guard on an unreadable PDF is only worth having if it fires, and the failure
+      # mode it was written for is silence: an empty read made every PDF assertion pass.
+      # So the guard is mutation-tested here - hide pdftotext behind a command that fails,
+      # and require the checker to go red. If it passes, the guard has gone quiet again and
+      # that would otherwise look exactly like every document being up to date.
+      - name: The unreadable-PDF guard fires
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p /tmp/fakebin
+          printf '#!/bin/sh\nexit 1\n' > /tmp/fakebin/pdftotext
+          chmod +x /tmp/fakebin/pdftotext
+          if PATH="/tmp/fakebin:$PATH" python3 reputation/check_surfaces.py --min-surfaces 22; then
+            echo "::error::a PDF that could not be read was accepted; the guard is not firing"
+            exit 1
+          fi
+          echo "unreadable PDF is reported, not skipped: ok"

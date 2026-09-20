@@ -419,7 +419,23 @@ def check_pdf_sources(files: list[pathlib.Path]) -> list[str]:
         source = pdf.with_suffix(".html")
         if not source.exists():
             continue
-        stale = sorted(numbers(read(pdf)) - numbers(html_text(source)))
+        text = read(pdf)
+        if not text.strip():
+            # An unreadable PDF used to pass every assertion below, because an empty string
+            # yields an empty number set and an empty set has nothing that is not a subset.
+            # The check could not tell "the PDF agrees with its HTML" from "the PDF was never
+            # read" - so a missing pdftotext, a scanned page or a corrupt file reported a
+            # clean result for a document nothing had looked at.
+            #
+            # That is the failure this guard was written about: PROPOSAL.pdf kept carrying a
+            # superseded corpus count through several corrections. Making the read itself
+            # asserted is what stops the guard going quiet the same way.
+            problems.append(
+                f"{pdf.name} produced no text, so nothing was checked against it. "
+                "Is pdftotext installed?"
+            )
+            continue
+        stale = sorted(numbers(text) - numbers(html_text(source)))
         if stale:
             problems.append(
                 f"{pdf.name} contains {stale}, which {source.name} no longer contains: the PDF "
