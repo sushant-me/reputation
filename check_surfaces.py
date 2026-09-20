@@ -89,6 +89,15 @@ SURFACES = [
     "mcp-nameguard/README.md",
     "trajectorycheck/README.md",
     "tool-boundary-corpus/README.md",
+    # The posts and the work samples are public claims surfaces too. The benchmark
+    # post states precision and recall; the version of the test count it corrects
+    # lives in it; the review sample asserts four findings reproduce. None of them
+    # was scanned, which is how a surface escapes a checker that lists its files
+    # by hand.
+    "writeups/*.md",
+    "agent-review-sample/*.md",
+    "Edge-Native_Semantic_Firewall_/README.md",
+    "Edge-Native_Semantic_Firewall_/docs/*.md",
 ]
 
 # Where a `releases/tag/vX.Y.Z` link means "this is the current release". Project

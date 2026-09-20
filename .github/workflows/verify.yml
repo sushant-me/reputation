@@ -72,6 +72,23 @@ jobs:
           repository: sushant-me/tool-boundary-corpus
           path: tool-boundary-corpus
 
+      # The posts, the work sample and the paper's own documents make public claims
+      # too - the benchmark post states precision and recall, the review sample
+      # asserts four findings reproduce, and the paper README carries the measured
+      # numbers. They were not scanned because the list was written by hand.
+      - uses: actions/checkout@v5
+        with:
+          repository: sushant-me/writeups
+          path: writeups
+      - uses: actions/checkout@v5
+        with:
+          repository: sushant-me/agent-review-sample
+          path: agent-review-sample
+      - uses: actions/checkout@v5
+        with:
+          repository: sushant-me/Edge-Native_Semantic_Firewall_
+          path: Edge-Native_Semantic_Firewall_
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -92,4 +109,4 @@ jobs:
       - name: Check the public surfaces for stale or wrong claims
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python3 reputation/check_surfaces.py --min-surfaces 11
+        run: python3 reputation/check_surfaces.py --min-surfaces 21
