@@ -290,10 +290,10 @@ LIVE_SITES = [
     # A deploy that drops it is a page that is behind the repository - the failure this
     # check exists to catch - so it is asserted rather than trusted to stay.
     ("https://sushantpoudel2028.com.np/", "the portfolio",
-     ["117-byte", "generalised into", "GHSA-qwvv-fcmm-r3j2"],
+     ["117-byte", "generalised into", "GHSA-qwvv-fcmm-r3j2", "Bhaktapur"],
      ["5-byte", "Patch merged into"]),
     ("https://sushant-me.github.io/hire/", "the hire page",
-     ["117-byte input", "generalised into", "from graduation", "GHSA-qwvv-fcmm-r3j2"],
+     ["117-byte input", "generalised into", "from graduation", "GHSA-qwvv-fcmm-r3j2", "Bhaktapur"],
      ["month year"]),
 ]
 
