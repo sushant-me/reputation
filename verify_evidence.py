@@ -177,9 +177,26 @@ def check_github_pr_superseded_no_credit(claim: dict) -> tuple[str, str]:
                 "it now understates"
             )
 
+    # The credit landed by a third route the first version of this check did not look at: the
+    # maintainer offered the AUTHORS-file mechanism, the contributor opened the PR, and it was
+    # merged. Checking only for a Co-authored-by trailer would now report "not yet credited" on
+    # a claim that is out of date in the other direction - understating instead of overstating,
+    # which is still wrong.
+    authors_entry = None
+    contents = gh_api(f"repos/{repo}/contents/AUTHORS")
+    if contents and contents.get("content"):
+        import base64 as _b64
+        authors_entry = "sushant poudel" in _b64.b64decode(contents["content"]).decode(
+            "utf-8", "replace").lower()
+    if authors_entry:
+        return PASS, (
+            f"#{mine} merged {str(pr.get('merged_at'))[:10]} then superseded by #{theirs}; "
+            "master has the replacement; and the credit has LANDED - Sushant Poudel is in the "
+            f"AUTHORS file on master (via PR #{claim.get('authors_pr', {}).get('number', '?')})"
+        )
     return PASS, (
         f"#{mine} merged {str(pr.get('merged_at'))[:10]} then superseded by "
-        f"#{theirs}; master has the replacement; credit promised publicly, not yet in the commit"
+        f"#{theirs}; master has the replacement; credit offered, not yet in AUTHORS"
     )
 
 
