@@ -426,6 +426,26 @@
         "4 published advisories",
         "1 high, 3 medium"
       ]
+    },
+    {
+      "id": "claude-bughunter-skill-routing",
+      "category": "open-source",
+      "claim": "Merged a feature into a third-party bug-bounty engine that made 22 unreachable hunt-* skills routable",
+      "detail": "Auditing Claude-BugHunter's autonomy engine found 22 of its 58 hunt-* skills had no entry in CLASS_SKILL or TECH_SKILL, so they could never be selected and the routing loop silently degraded to hunt-misc. Completed the class (26 to 47), tech (10 to 20) and probe mappings; extended recon.py's deterministic classifier so those classes are actually emitted (websocket, cicd, k8s, cloud-misconfig, forgot-password, captcha-bypass, jwt-crypto, shadow-api, ato, mfa); covered every routed class in CLASS_WEIGHT so they rank by impact instead of the default; and added a coverage check that reports any installed hunt-* skill unreachable through a mapping. Self-tests and the repository's own linters pass. Credited as a contributor to the repository.",
+      "source": {
+        "kind": "github_pr",
+        "repo": "elementalsouls/Claude-BugHunter",
+        "number": 81,
+        "url": "https://github.com/elementalsouls/Claude-BugHunter/pull/81"
+      },
+      "verification": {
+        "method": "github_pr_merged"
+      },
+      "metrics": [
+        "22 of 58 skills unroutable before",
+        "26 -> 47 classes mapped",
+        "10 -> 20 techniques mapped"
+      ]
     }
   ]
 }

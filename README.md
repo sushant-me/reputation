@@ -19,7 +19,7 @@ on-request  PREBAS accepted, 2026 IEEE RTC (Chicago)                  acceptance
 Run it yourself:
 
 ```bash
-python3 verify_evidence.py            # 20 claims: 16 checked live, 4 on request
+python3 verify_evidence.py            # 21 claims: 17 checked live, 4 on request
 python3 verify_evidence.py --json     # same, machine-readable
 python3 check_surfaces.py             # the pages a reader reaches
 python3 check_surfaces.py --require-all   # ...including the CVs and job-kit, on the workstation
