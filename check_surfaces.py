@@ -70,6 +70,13 @@ SURFACES = [
     "hire/index.html",
     "cv/*.html",
     "cv/*.md",
+    # The PDFs, which are the artifacts that actually get attached to an application.
+    # `read()` has understood PDFs for a while and nothing listed one, so the one surface
+    # an employer receives was the one surface never checked - and a correction applied to
+    # the HTML and not regenerated into the PDF would have gone out unnoticed.
+    "cv/*.pdf",
+    "reputation/*.pdf",
+    "job-kit/*.pdf",
     "portfolio/src/app/page.tsx",
     "reputation/Sushant_Poudel_Evidence_Sheet.html",
     # A glob for the same reason as job-kit: the ledger and the README both state
@@ -453,6 +460,27 @@ def main(argv: list[str] | None = None) -> int:
         problems.append(
             f"only {len(files)} surface(s) present, need at least "
             f"{args.min_surfaces}: a check with nothing to read is not a pass")
+    # 0b. No attachable PDF may be invisible.
+    #
+    #     The PDFs are the artifacts that actually reach an employer, and they were the one
+    #     surface left out of SURFACES - which is how PROPOSAL.pdf sat for several rounds still
+    #     saying "19 labelled cases" after the number had been corrected in the .md and the
+    #     .html. Worse, the first version of this guard hard-coded three directory names that
+    #     already had `*.pdf` globs, so it could never fire: a guard that cannot fail is the
+    #     same green tick this file exists to prevent. The directories are derived from the
+    #     patterns now, so any directory we claim to scan has to scan its PDFs too.
+    listed = {p.resolve() for p in files}
+    scanned_dirs = {pattern.split("/", 1)[0] for pattern in SURFACES if "/" in pattern}
+    for directory in sorted(scanned_dirs):
+        target = WORKSPACE / directory
+        if not target.is_dir():
+            continue
+        for pdf in sorted(target.glob("*.pdf")):
+            if pdf.resolve() not in listed:
+                problems.append(
+                    f"{directory}/{pdf.name} is a PDF in a scanned directory that no SURFACES "
+                    "pattern matches, so nothing checks what it says")
+
     if args.require_all and missing_globs:
         problems.append(
             "--require-all: nothing matched " + ", ".join(missing_globs))
