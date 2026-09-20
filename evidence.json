@@ -267,7 +267,7 @@
       "id": "tool-policygate",
       "category": "open-source",
       "claim": "policygate - a fail-closed policy gate for agent tool calls, built so a language model can never authorise an action",
-      "detail": "Rules are evaluated by severity rather than file order; ALLOW is produced only by an allow rule; a model may deny or escalate but its ALLOW on an uncovered call is overruled and recorded; a failing or unparseable evaluator falls through to the refusing default; every decision goes to a hash-chained audit log. Adapters wrap MCP-style servers, LangChain-style tools and provider-shaped function calls, duck-typed so no framework becomes a dependency. Verified by mutation: weakening either the model-allow invariant or the unparseable-call path fails six tests.",
+      "detail": "Rules are evaluated by severity rather than file order; ALLOW is produced only by an allow rule; a model may deny or escalate but its ALLOW on an uncovered call is overruled and recorded; a failing or unparseable evaluator falls through to the refusing default; every decision goes to a hash-chained audit log. Adapters wrap MCP-style servers, LangChain-style tools and provider-shaped function calls, duck-typed so no framework becomes a dependency. Verified by mutation: disabling the model-allow invariant fails three tests, disabling the unparseable-call path fails three, and disabling both fails six.",
       "source": {
         "kind": "public_repo",
         "url": "https://github.com/sushant-me/policygate"
