@@ -258,6 +258,63 @@ def check_github_issues_open(claim: dict) -> tuple[str, str]:
     return PASS, note
 
 
+def check_paper_artifacts_reproduce(claim: dict) -> tuple[str, str]:
+    """Clone the paper repository and run its own reproducibility checker.
+
+    The strongest claim on the record is also the one a reader is least able to
+    check by clicking: a table of measured numbers. So it is checked the only way
+    that means anything — the repository ships its corpus generator, its raw model
+    outputs and a checker, and the checker is run here on a fresh clone.
+
+    `make verify` needs no model execution: it regenerates the 600-scenario corpus
+    and recomputes every metric from the committed generations. That keeps it to a
+    ~9 MB clone and about two seconds, which is why it can run weekly rather than
+    being taken on trust.
+    """
+    import tempfile
+
+    url = claim["source"]["url"]
+    script = claim["source"]["script"]
+    with tempfile.TemporaryDirectory() as tmp:
+        try:
+            clone = subprocess.run(
+                ["git", "clone", "--depth", "1", "--quiet", url, tmp],
+                capture_output=True, text=True, timeout=180, check=False)
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            return FAIL, f"could not clone {url}: {exc.__class__.__name__}"
+        if clone.returncode != 0:
+            return FAIL, f"clone failed: {clone.stderr.strip().splitlines()[-1:] or '?'}"
+
+        candidate = pathlib.Path(tmp) / script
+        if not candidate.exists():
+            return FAIL, f"{script} is not in the repository any more"
+
+        try:
+            run = subprocess.run(
+                ["python3", script], cwd=tmp, capture_output=True, text=True,
+                timeout=600, check=False)
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            return FAIL, f"could not run {script}: {exc.__class__.__name__}"
+
+        lines = [l.strip() for l in run.stdout.splitlines() if l.strip().startswith("PASS")]
+        if run.returncode != 0:
+            tail = (run.stdout + run.stderr).strip().splitlines()[-3:]
+            return FAIL, f"{script} exited {run.returncode}: " + " | ".join(tail)
+        if not lines:
+            return FAIL, f"{script} exited 0 but reported no PASS lines"
+
+    # One short label per check: the clause before the first bracket or dash, which
+    # is where each line states what it verified. Cutting every line at 58 characters
+    # split words in half and made the note unreadable - and an unreadable note is
+    # one nobody checks.
+    labels = []
+    for line in lines:
+        text = line.replace("PASS  ", "", 1).split(" (")[0].split(" - ")[0].strip()
+        labels.append(text if len(text) <= 64 else text[:61].rsplit(" ", 1)[0] + "...")
+    return PASS, (f"{len(lines)} artifact checks pass on a fresh clone: "
+                  + "; ".join(labels))
+
+
 def check_public_repo_exists(claim: dict) -> tuple[str, str]:
     url = claim["source"]["url"]
     slug = url.rstrip("/").split("github.com/")[-1]
@@ -275,6 +332,7 @@ CHECKS = {
     "github_pr_open_or_merged": check_github_pr_open_or_merged,
     "github_prs_open_or_merged": check_github_prs_open_or_merged,
     "github_issues_open": check_github_issues_open,
+    "paper_artifacts_reproduce": check_paper_artifacts_reproduce,
     "public_repo_exists": check_public_repo_exists,
 }
 

@@ -72,7 +72,9 @@ SURFACES = [
     "cv/*.md",
     "portfolio/src/app/page.tsx",
     "reputation/Sushant_Poudel_Evidence_Sheet.html",
-    "reputation/README.md",
+    # A glob for the same reason as job-kit: the ledger and the README both state
+    # claim counts, and the ledger was not being scanned at all.
+    "reputation/*.md",
     # A glob rather than a list: a new document in job-kit is covered the moment it
     # exists, instead of waiting for someone to remember to add it here.
     "job-kit/*.md",
@@ -198,6 +200,34 @@ def read(path: pathlib.Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
 
 
+def evidence_counts() -> dict[str, int]:
+    """What `evidence.json` actually contains, computed rather than remembered.
+
+    The count of claims, and how many of them are checkable live, is derived here
+    from the file and from `verify_evidence.CHECKS`. It has to be derived: the
+    number was written into six different sentences across the surfaces, and after
+    the fifth claim was added they disagreed with each other as well as with the
+    file. This is the same class of error as the other four, and the only fix that
+    lasts is for the checker to own the number.
+    """
+    sys.path.insert(0, str(HERE))
+    import verify_evidence  # noqa: PLC0415  (deliberate: same directory, no package)
+
+    claims = json.loads((HERE / "evidence.json").read_text(encoding="utf-8"))["claims"]
+    live = sum(1 for c in claims if c["verification"]["method"] in verify_evidence.CHECKS)
+    return {"claims": len(claims), "checked_live": live, "on_request": len(claims) - live}
+
+
+# Every number in prose that has to equal something in evidence.json.
+COUNT_RULES = [
+    (re.compile(r"\b(\d+)\s+claims\b"), "claims", "claim count"),
+    (re.compile(r"\b(\d+)\s+(?:checked|verified)\s+live\b"), "checked_live",
+     "live-checked count"),
+    (re.compile(r"\b(\d+)\s+documented on request\b"), "on_request",
+     "on-request count"),
+]
+
+
 def latest_release(repo: str) -> str | None:
     try:
         out = subprocess.run(
@@ -264,7 +294,22 @@ def main(argv: list[str] | None = None) -> int:
                 f"{target}: {what} - expected {phrase!r}, which is missing "
                 f"(a fix by deletion is not a fix)")
 
-    # 3. Live: a release label must be the release it names - on the surfaces where
+    # 3. Counts in prose must equal the counts in evidence.json.
+    truth = evidence_counts()
+    counts_checked = 0
+    for path in files:
+        text = read(path)
+        if not text:
+            continue
+        for pattern, key, what in COUNT_RULES:
+            for found in pattern.findall(text):
+                counts_checked += 1
+                if int(found) != truth[key]:
+                    problems.append(
+                        f"{path.relative_to(WORKSPACE)}: says {found} for the {what}, "
+                        f"but evidence.json has {truth[key]}")
+
+    # 4. Live: a release label must be the release it names - on the surfaces where
     #    linking a version means "this is the current one".
     version_links = 0
     for path in files:
@@ -289,6 +334,7 @@ def main(argv: list[str] | None = None) -> int:
         "forbidden_rules": len(FORBIDDEN),
         "required_rules": len(REQUIRED),
         "version_links_checked": version_links,
+        "counts_checked": counts_checked,
         "problems": problems,
     }
     if args.json:
@@ -301,6 +347,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"forbidden strings:       {len(FORBIDDEN)} rules")
         print(f"required strings:        {len(REQUIRED)} assertions")
         print(f"release links checked:   {version_links}")
+        print(f"prose counts checked:    {counts_checked} "
+              f"(truth: {truth['claims']} claims, {truth['checked_live']} live, "
+              f"{truth['on_request']} on request)")
         print()
         if problems:
             for problem in problems:

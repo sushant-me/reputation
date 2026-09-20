@@ -151,6 +151,25 @@
       }
     },
     {
+      "id": "paper-artifacts-reproduce",
+      "category": "research",
+      "claim": "The paper's committed artifacts reproduce from its committed sources",
+      "detail": "The repository ships the 600-scenario corpus, the raw model outputs for every condition, and the analysis, plus its own checker (src/verify_reproducibility.py, run by `make verify`). It passes on a fresh clone with no model execution: data/corpus.jsonl regenerates byte-for-byte from the generator, results/metrics.json reproduces from the raw outputs across 5 conditions, and 100 macros derive from metrics.json with any recorded constant declared as such. The numbers quoted elsewhere on my pages come from those artifacts - e.g. unsafe-accept rates 17.2% / 46.2% / 23.5%, decision accuracy 66.3%, and 6 of 208 hard denials approved in the best arm, where 208 is the count of Rule A scenarios in the committed corpus.",
+      "source": {
+        "kind": "public_repo",
+        "url": "https://github.com/sushant-me/Edge-Native_Semantic_Firewall_",
+        "script": "src/verify_reproducibility.py"
+      },
+      "verification": {
+        "method": "paper_artifacts_reproduce"
+      },
+      "metrics": [
+        "corpus regenerates byte-for-byte, 600 scenarios",
+        "metrics reproduce from raw outputs, 5 conditions",
+        "100 macros derive from metrics.json"
+      ]
+    },
+    {
       "id": "oss-fuzz-harness",
       "category": "security-research",
       "claim": "An OSS-Fuzz harness that was testing nothing, fixed",
