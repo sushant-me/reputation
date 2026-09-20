@@ -79,6 +79,9 @@ SURFACES = [
     # exists, instead of waiting for someone to remember to add it here.
     "job-kit/*.md",
     "job-kit/*.html",
+    # A queued email is a surface: it carried the stale corpus count, and it is the
+    # text that would have been sent to a funder.
+    "job-kit/outbox.json",
     # The project READMEs are claims surfaces too, and they carry numbers of their
     # own: rule counts, test counts, coverage figures, measured percentages. They
     # live in sibling repositories on the workstation and are checked out beside
@@ -150,6 +153,16 @@ FORBIDDEN = {
         "the paper's own label is 'Rule A decision accuracy' over 'Rule A hard "
         "denials'. Use its words, so a reader can find the row."
     ),
+    "18 labelled cases": (
+        "the corpus grew to 19 cases; the count appears in eight places and moves "
+        "whenever a case is added."
+    ),
+    "18 agent tool-boundary cases": "the corpus grew to 19 cases.",
+    "18 labelled agent tool-boundary cases": "the corpus grew to 19 cases.",
+    "18 self-authored cases": "the corpus grew to 19 cases.",
+    "declaration scanner) — 13 cases": (
+        "the tool-list subset grew to 14 cases with the regression case."
+    ),
     "[month year]": (
         "an unfilled placeholder on a public page; it now reads 'from graduation'."
     ),
@@ -178,6 +191,15 @@ REQUIRED: list[tuple[str, str, str]] = [
     ("profile-readme/README.md", "117-byte", "the corrected size survives a reword"),
     ("policygate/README.md", "Rule A hard-denial",
      "the paper's own label, not a paraphrase of it"),
+    ("profile-readme/README.md", "19 agent tool-boundary cases", "the corpus count"),
+    ("hire/index.html", "19 labelled agent tool-boundary cases", "the corpus count"),
+    ("reputation/OPEN-LOOPS.md", "19 labelled cases", "the corpus count"),
+    ("job-kit/PROPOSAL.md", "19 labelled cases", "the corpus count"),
+    ("job-kit/PROPOSAL.md", "Grow the 19 self-authored cases", "the corpus count"),
+    ("job-kit/LAUNCH-POSTS.md", "19 agent tool-boundary cases", "the corpus count"),
+    ("job-kit/outbox.json", "19 agent tool-boundary cases", "the corpus count"),
+    ("writeups/2026-09-21-a-benchmark-found-a-bug-in-my-own-detector.md",
+     "declaration scanner) — 14 cases", "the tool-list subset count"),
 ]
 
 
