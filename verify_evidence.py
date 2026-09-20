@@ -342,6 +342,37 @@ def check_public_repo_exists(claim: dict) -> tuple[str, str]:
                   f"pushed {str(repo.get('pushed_at'))[:10]}")
 
 
+def check_github_advisories(claim: dict) -> tuple[str, str]:
+    """Every advisory named here is still published, at the severity claimed.
+
+    A security advisory is the one form of recognition in this file that a reader can look
+    up independently and that cannot be edited into existence: GitHub issues the
+    identifier, binds it to the repository, and keeps it at a stable public URL. So the
+    check is not "does the fix exist" - that is the release and the test - but "is the
+    advisory still there and still saying what is claimed about it". One that was withdrawn,
+    or downgraded after triage, must stop being cited rather than quietly keep its place.
+    """
+    expected = claim["verification"]["expect"]["advisories"]
+    problems, checked = [], []
+    for entry in expected:
+        data = gh_api(
+            f"repos/sushant-me/{entry['repo']}/security-advisories/{entry['ghsa']}")
+        if data is None:
+            problems.append(f"{entry['ghsa']} unreadable")
+            continue
+        if data.get("state") != "published":
+            problems.append(f"{entry['ghsa']} is {data.get('state')!r}, not 'published'")
+            continue
+        if data.get("severity") != entry["severity"]:
+            problems.append(
+                f"{entry['ghsa']} is {data.get('severity')!r}, not {entry['severity']!r}")
+            continue
+        checked.append(f"{entry['ghsa']} ({data.get('severity')})")
+    if problems:
+        return FAIL, "; ".join(problems)
+    return PASS, f"{len(checked)} published: " + ", ".join(checked)
+
+
 CHECKS = {
     "hackinghub_rank": check_hackinghub_rank,
     "github_pr_merged": check_github_pr_merged,
@@ -351,6 +382,7 @@ CHECKS = {
     "github_issues_open": check_github_issues_open,
     "paper_artifacts_reproduce": check_paper_artifacts_reproduce,
     "public_repo_exists": check_public_repo_exists,
+    "github_advisories": check_github_advisories,
 }
 
 

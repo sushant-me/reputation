@@ -384,6 +384,48 @@
         "method": "human_asserted",
         "on_request": "transcript"
       }
+    },
+    {
+      "id": "published-security-advisories",
+      "category": "security-research",
+      "claim": "Four published GitHub security advisories for vulnerabilities found and fixed in my own security tooling",
+      "detail": "GHSA-qwvv-fcmm-r3j2 (policygate, high) - a glob rule in the policy gate could be stepped around with a newline in the matched value, so a targeted deny rule was silently skipped and the call fell through to a broader allow. GHSA-wcqw-86xv-w95q (mcp-nameguard, medium) - unbounded reads let a hostile MCP server kill the scanner that was inspecting it. GHSA-mffv-hhg5-mm33 (agentbound, medium) - the masker blanked one-line assigned strings, hiding findings the scanner exists to report. GHSA-62f4-h552-54wc (mcpaudit, medium) - invisible-character ranges omitted the variation selector supplement and other channels, and the omission also survived the strip_invisible helper that is meant to show what text really contains. Each has a reproduction and a regression test; CVE identifiers requested from GitHub's CNA.",
+      "source": {
+        "kind": "github_advisories",
+        "url": "https://github.com/sushant-me/policygate/security/advisories/GHSA-qwvv-fcmm-r3j2",
+        "note": "four advisories, one per repository"
+      },
+      "verification": {
+        "method": "github_advisories",
+        "expect": {
+          "advisories": [
+            {
+              "repo": "policygate",
+              "ghsa": "GHSA-qwvv-fcmm-r3j2",
+              "severity": "high"
+            },
+            {
+              "repo": "mcp-nameguard",
+              "ghsa": "GHSA-wcqw-86xv-w95q",
+              "severity": "medium"
+            },
+            {
+              "repo": "agentbound",
+              "ghsa": "GHSA-mffv-hhg5-mm33",
+              "severity": "medium"
+            },
+            {
+              "repo": "mcpaudit",
+              "ghsa": "GHSA-62f4-h552-54wc",
+              "severity": "medium"
+            }
+          ]
+        }
+      },
+      "metrics": [
+        "4 published advisories",
+        "1 high, 3 medium"
+      ]
     }
   ]
 }

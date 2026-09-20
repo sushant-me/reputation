@@ -12,7 +12,7 @@ the difference is that it is written down.
 | loop | what happened |
 |---|---|
 | **The AI repository was local-only** | 16 commits / 28,656 lines — voice front end, agent loop, selective memory, keyed long-context store, trained emotion classifier, dashboard + one-call API — were sitting on this disk while the profile README linked the repo as public. **Pushed** to `sushant-me/beyond-attention`. |
-| **Claims that could not be checked** | Every claim now lives in `reputation/evidence.json` with its source, and a script re-checks all of them weekly. 19 claims, 15 verified live, 4 documented on request, 0 failing. |
+| **Claims that could not be checked** | Every claim now lives in `reputation/evidence.json` with its source, and a script re-checks all of them weekly. 20 claims, 16 verified live, 4 documented on request, 0 failing. |
 | **Profile README with no verifiable claim on it** | Replaced with the receipts: merged Google patch, five s2geometry issues, HackingHub #1 with numbers, two papers. All 24 links return 200. |
 | **Three repositories red for weeks** | `ghar-ko-sathi-nepal` (red since 2026-08-05), `tradiemate-australia`, `tdd-bdd-final-project` — all root-caused, fixed, and green in real CI. |
 | **Notifications** | 32 unread → 0, each one explained rather than dismissed. |
