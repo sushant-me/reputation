@@ -285,11 +285,15 @@ def read(path: pathlib.Path) -> str:
 # while the host had in fact rebuilt itself on every push - a number nothing
 # recomputed, in the document that exists because of numbers nothing recomputed.
 LIVE_SITES = [
+    # The advisory id is asserted on both pages because these are the surfaces a reader
+    # actually lands on, and the security work existed only on GitHub until it was added.
+    # A deploy that drops it is a page that is behind the repository - the failure this
+    # check exists to catch - so it is asserted rather than trusted to stay.
     ("https://sushantpoudel2028.com.np/", "the portfolio",
-     ["117-byte", "generalised into"],
+     ["117-byte", "generalised into", "GHSA-qwvv-fcmm-r3j2"],
      ["5-byte", "Patch merged into"]),
     ("https://sushant-me.github.io/hire/", "the hire page",
-     ["117-byte input", "generalised into", "from graduation"],
+     ["117-byte input", "generalised into", "from graduation", "GHSA-qwvv-fcmm-r3j2"],
      ["month year"]),
 ]
 
