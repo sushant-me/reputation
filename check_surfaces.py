@@ -305,7 +305,16 @@ def fetch(url: str, attempts: int = 3, pause: float = 4.0) -> str | None:
     return None
 
 
-def check_live_sites() -> tuple[list[str], int]:
+def check_live_sites(truth: dict[str, int]) -> tuple[list[str], int]:
+    """The deployed pages, and the counts among them.
+
+    A surface in this repository was already correct while the page a reader clicked still
+    said otherwise, so the required/forbidden phrases are asserted against the fetched
+    bytes. The counts are asserted the same way, and for the same reason: `LIVE_SITES` was
+    the one place a number could go stale with nothing looking at it. Running `COUNT_RULES`
+    over the fetched text reuses the derivation instead of adding a second copy of the
+    number to keep in step.
+    """
     problems: list[str] = []
     checked = 0
     for url, label, required, forbidden in LIVE_SITES:
@@ -325,6 +334,15 @@ def check_live_sites() -> tuple[list[str], int]:
                 problems.append(
                     f"{label} ({url}) still contains {phrase!r}, which was corrected in "
                     "the source: the deployment is behind the repository")
+        for pattern, key, what in COUNT_RULES:
+            if key not in truth:
+                continue
+            for found in pattern.findall(text):
+                checked += 1
+                if int(found) != truth[key]:
+                    problems.append(
+                        f"{label} ({url}) says {found} for the {what}, but the corpus has "
+                        f"{truth[key]}: the deployment is behind the repository")
     return problems, checked
 
 
@@ -489,8 +507,8 @@ def main(argv: list[str] | None = None) -> int:
                         f"{path.relative_to(WORKSPACE)}: says {found} for the {what}, "
                         f"but the corpus has {truth[key]}")
 
-    # 4. The deployed pages, which nothing else looks at.
-    live_problems, live_checked = check_live_sites()
+    # 4. The deployed pages, which nothing else looks at - including any count on them.
+    live_problems, live_checked = check_live_sites(truth)
     problems.extend(live_problems)
 
     # 5. Live: a release label must be the release it names - on the surfaces where
