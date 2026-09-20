@@ -22,12 +22,16 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
+      # Every repository is checked out into a subdirectory, including this one, so
+      # the layout matches the workstation: one parent holding `reputation/`,
+      # `profile-readme/`, `hire/` and `portfolio/`. `check_surfaces.py` resolves its
+      # surfaces relative to that parent. The first version of this job checked this
+      # repository out at the root instead, so the script looked one level too high,
+      # found a single surface, and the run failed - which is how the mistake was
+      # caught rather than passing quietly.
       - uses: actions/checkout@v5
-
-      # `check_surfaces.py` reads the pages a reader actually reaches, and three of
-      # them live in other repositories. Checking them out here is what gives that
-      # step real coverage; `--min-surfaces 4` then makes a run that found nothing to
-      # read fail instead of passing, which is the failure mode it exists to catch.
+        with:
+          path: reputation
       - uses: actions/checkout@v5
         with:
           repository: sushant-me/sushant-me
@@ -46,20 +50,18 @@ jobs:
           python-version: "3.12"
 
       # The checks read public sources over the unauthenticated GitHub API, so
-      # this job needs no credentials. GH_TOKEN is passed only so the script can
+      # this job needs no credentials. GH_TOKEN is passed only so the scripts can
       # fall back to `gh` if the anonymous hourly limit is hit.
       - name: Verify every claim against its source
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python3 verify_evidence.py
+        run: python3 reputation/verify_evidence.py
 
       # The CVs and job-kit are not repositories, so this step covers what is
       # reachable from CI: the profile, the hire page, the portfolio source and the
       # evidence sheet. Running it with --require-all on the workstation covers the
-      # rest.
+      # rest. `--min-surfaces 4` makes a run that found nothing to read fail.
       - name: Check the public surfaces for stale or wrong claims
         env:
-          # The release-link check asks GitHub for each repository's latest release;
-          # unauthenticated `gh` on a runner has no token, so it is passed here too.
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python3 check_surfaces.py --min-surfaces 4
+        run: python3 reputation/check_surfaces.py --min-surfaces 4

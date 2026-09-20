@@ -41,7 +41,28 @@ import subprocess
 import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
-WORKSPACE = HERE.parent
+
+
+def resolve_workspace() -> pathlib.Path:
+    """The directory holding the sibling surfaces.
+
+    Normally the parent of this repository, because the workstation has
+    `reputation/`, `profile-readme/`, `hire/`, `cv/` and `job-kit/` side by side, and
+    CI checks every repository out into a subdirectory to reproduce that shape.
+
+    The first version of the workflow checked this repository out at the root
+    instead, so the script looked one level too high, found a single surface, and
+    failed. Failing was correct; looking in the wrong place was not. So the parent
+    is only used when it actually looks like a workspace.
+    """
+    for candidate in (HERE.parent, HERE):
+        if any((candidate / marker).exists()
+               for marker in ("reputation", "profile-readme", "hire", "job-kit")):
+            return candidate
+    return HERE.parent
+
+
+WORKSPACE = resolve_workspace()
 
 # Every surface a reader can reach. Globs, so a new CV variant is covered by default.
 SURFACES = [
