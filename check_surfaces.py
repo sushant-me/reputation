@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Check the public surfaces for claims that are stale, wrong, or quietly removed.
 
-`verify_evidence.py` checks the 18 top-level claims against their sources. It did
+`verify_evidence.py` checks the 19 top-level claims against their sources. It did
 not notice three separate errors, because all three were *details inside* a claim
 that had been true when it was written:
 
@@ -159,11 +159,28 @@ FORBIDDEN = {
     "18 agent tool-boundary cases": "the corpus grew to 19 cases.",
     "18 labelled agent tool-boundary cases": "the corpus grew to 19 cases.",
     "18 self-authored cases": "the corpus grew to 19 cases.",
+    # The corpus then grew to 23 with the declaration-drift class, so every spelling of the
+    # nineteen-case count is now wrong too. Old counts stay forbidden forever: a page that
+    # reverts to one must fail, not pass because the rule was retired.
+    "19 labelled cases": (
+        "the corpus grew to 23 cases with the declaration-drift class; the count appears "
+        "in eight places and moves whenever a case is added."
+    ),
+    "19 agent tool-boundary cases": "the corpus grew to 23 cases.",
+    "19 labelled agent tool-boundary cases": "the corpus grew to 23 cases.",
+    "19 self-authored cases": "the corpus grew to 23 cases.",
     "declaration scanner) — 13 cases": (
         "the tool-list subset grew to 14 cases with the regression case."
     ),
     "27 tests": (
         "the corpus suite grew to 32 with the adapter tests; the README said 27."
+    ),
+    "32 tests": (
+        "the corpus suite grew to 54 with the drift cases and the adapter tests, which "
+        "its README said 32. The first drift adapter read only the detector's `findings` "
+        "key, so the four new cases scored recall 0.000 against a detector that passed "
+        "them. Forbidden globally for now; scope it to the corpus README if another "
+        "project here ever ships a thirty-two-test suite."
     ),
     "Run every available": (
         "the conformance deliverable promised every scanner; the best-known one cannot be "
@@ -197,16 +214,16 @@ REQUIRED: list[tuple[str, str, str]] = [
     ("profile-readme/README.md", "117-byte", "the corrected size survives a reword"),
     ("policygate/README.md", "Rule A hard-denial",
      "the paper's own label, not a paraphrase of it"),
-    ("profile-readme/README.md", "19 agent tool-boundary cases", "the corpus count"),
-    ("hire/index.html", "19 labelled agent tool-boundary cases", "the corpus count"),
-    ("reputation/OPEN-LOOPS.md", "19 labelled cases", "the corpus count"),
-    ("job-kit/PROPOSAL.md", "19 labelled cases", "the corpus count"),
-    ("job-kit/PROPOSAL.md", "Grow the 19 self-authored cases", "the corpus count"),
-    ("job-kit/LAUNCH-POSTS.md", "19 agent tool-boundary cases", "the corpus count"),
-    ("job-kit/outbox.json", "19 agent tool-boundary cases", "the corpus count"),
+    ("profile-readme/README.md", "23 agent tool-boundary cases", "the corpus count"),
+    ("hire/index.html", "23 labelled agent tool-boundary cases", "the corpus count"),
+    ("reputation/OPEN-LOOPS.md", "23 labelled cases", "the corpus count"),
+    ("job-kit/PROPOSAL.md", "23 labelled cases", "the corpus count"),
+    ("job-kit/PROPOSAL.md", "Grow the 23 self-authored cases", "the corpus count"),
+    ("job-kit/LAUNCH-POSTS.md", "23 agent tool-boundary cases", "the corpus count"),
+    ("job-kit/outbox.json", "23 agent tool-boundary cases", "the corpus count"),
     ("writeups/2026-09-21-a-benchmark-found-a-bug-in-my-own-detector.md",
      "declaration scanner) — 14 cases", "the tool-list subset count"),
-    ("tool-boundary-corpus/README.md", "32 tests", "the suite count"),
+    ("tool-boundary-corpus/README.md", "54 tests", "the suite count"),
     ("tool-boundary-corpus/README.md", "does not analyse locally",
      "the Snyk offline limitation"),
     ("tool-boundary-corpus/README.md", "adapters/mcp_scanner_adapter.py",
@@ -322,6 +339,22 @@ def normalise(text: str) -> str:
     return " ".join(text.split())
 
 
+def corpus_case_count() -> int | None:
+    """The corpus's own case count, counted from its files rather than remembered.
+
+    The count appeared as a required string in eight places, which catches a surface that
+    failed to update but *not* a surface that disagrees with the corpus — and the number is
+    sitting on disk a directory away, in the fixtures themselves. So it is counted here.
+
+    It happens to agree with the eight required strings today; the point is that this rule
+    would still be right if the corpus grew and nobody remembered this file.
+    """
+    directory = WORKSPACE / "tool-boundary-corpus" / "cases"
+    if not directory.is_dir():
+        return None
+    return len(list(directory.glob("*.json")))
+
+
 def evidence_counts() -> dict[str, int]:
     """What `evidence.json` actually contains, computed rather than remembered.
 
@@ -337,16 +370,31 @@ def evidence_counts() -> dict[str, int]:
 
     claims = json.loads((HERE / "evidence.json").read_text(encoding="utf-8"))["claims"]
     live = sum(1 for c in claims if c["verification"]["method"] in verify_evidence.CHECKS)
-    return {"claims": len(claims), "checked_live": live, "on_request": len(claims) - live}
+    counts = {"claims": len(claims), "checked_live": live, "on_request": len(claims) - live}
+    corpus = corpus_case_count()
+    if corpus is not None:
+        counts["corpus_cases"] = corpus
+    return counts
 
 
 # Every number in prose that has to equal something in evidence.json.
+#
+# The corpus entries are spelled out per phrasing rather than matched with a loose
+# `\d+ ... cases`, because this repository also writes subset counts in prose — the four
+# declaration-drift cases, the five negatives, the fourteen tool-list cases — and a loose
+# pattern would compare those against the total and report a failure that is not one.
 COUNT_RULES = [
     (re.compile(r"\b(\d+)\s+claims\b"), "claims", "claim count"),
     (re.compile(r"\b(\d+)\s+(?:checked|verified)\s+live\b"), "checked_live",
      "live-checked count"),
     (re.compile(r"\b(\d+)\s+documented on request\b"), "on_request",
      "on-request count"),
+    (re.compile(r"\b(\d+)\s+labelled cases\b"), "corpus_cases", "corpus case count"),
+    (re.compile(r"\b(\d+)\s+labelled agent tool-boundary cases\b"), "corpus_cases",
+     "corpus case count"),
+    (re.compile(r"\b(\d+)\s+agent tool-boundary cases\b"), "corpus_cases",
+     "corpus case count"),
+    (re.compile(r"\b(\d+)\s+self-authored cases\b"), "corpus_cases", "corpus case count"),
 ]
 
 
@@ -417,20 +465,29 @@ def main(argv: list[str] | None = None) -> int:
                 f"{target}: {what} - expected {phrase!r}, which is missing "
                 f"(a fix by deletion is not a fix)")
 
-    # 3. Counts in prose must equal the counts in evidence.json.
+    # 3. Counts in prose must equal the counts in evidence.json (and, for the corpus, the
+    #    count taken from the corpus's own case files).
     truth = evidence_counts()
     counts_checked = 0
+    counts_skipped: list[str] = []
     for path in files:
         text = read(path)
         if not text:
             continue
         for pattern, key, what in COUNT_RULES:
             for found in pattern.findall(text):
+                if key not in truth:
+                    # The corpus is not in this checkout, so its count cannot be re-derived.
+                    # Recorded rather than passed silently: a count nobody could check must
+                    # not look like a count that was checked.
+                    if what not in counts_skipped:
+                        counts_skipped.append(what)
+                    continue
                 counts_checked += 1
                 if int(found) != truth[key]:
                     problems.append(
                         f"{path.relative_to(WORKSPACE)}: says {found} for the {what}, "
-                        f"but evidence.json has {truth[key]}")
+                        f"but the corpus has {truth[key]}")
 
     # 4. The deployed pages, which nothing else looks at.
     live_problems, live_checked = check_live_sites()
@@ -478,7 +535,12 @@ def main(argv: list[str] | None = None) -> int:
         print(f"live pages checked:      {live_checked} assertions on {len(LIVE_SITES)} pages")
         print(f"prose counts checked:    {counts_checked} "
               f"(truth: {truth['claims']} claims, {truth['checked_live']} live, "
-              f"{truth['on_request']} on request)")
+              f"{truth['on_request']} on request"
+              + (f", {truth['corpus_cases']} corpus cases"
+                 if "corpus_cases" in truth else "") + ")")
+        if counts_skipped:
+            print(f"counts NOT re-derived:   {', '.join(counts_skipped)} "
+                  f"(source not in this checkout)")
         print()
         if problems:
             for problem in problems:
