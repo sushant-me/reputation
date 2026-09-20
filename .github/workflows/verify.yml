@@ -24,6 +24,23 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      # `check_surfaces.py` reads the pages a reader actually reaches, and three of
+      # them live in other repositories. Checking them out here is what gives that
+      # step real coverage; `--min-surfaces 4` then makes a run that found nothing to
+      # read fail instead of passing, which is the failure mode it exists to catch.
+      - uses: actions/checkout@v5
+        with:
+          repository: sushant-me/sushant-me
+          path: profile-readme
+      - uses: actions/checkout@v5
+        with:
+          repository: sushant-me/hire
+          path: hire
+      - uses: actions/checkout@v5
+        with:
+          repository: sushant-me/Portfolio
+          path: portfolio
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -35,3 +52,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 verify_evidence.py
+
+      # The CVs and job-kit are not repositories, so this step covers what is
+      # reachable from CI: the profile, the hire page, the portfolio source and the
+      # evidence sheet. Running it with --require-all on the workstation covers the
+      # rest.
+      - name: Check the public surfaces for stale or wrong claims
+        env:
+          # The release-link check asks GitHub for each repository's latest release;
+          # unauthenticated `gh` on a runner has no token, so it is passed here too.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 check_surfaces.py --min-surfaces 4
