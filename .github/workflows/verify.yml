@@ -45,6 +45,33 @@ jobs:
           repository: sushant-me/Portfolio
           path: portfolio
 
+      # The project READMEs are claims surfaces too - rule counts, test counts,
+      # measured percentages - so they are checked rather than assumed.
+      - uses: actions/checkout@v5
+        with:
+          repository: sushant-me/agentbound
+          path: agentbound
+      - uses: actions/checkout@v5
+        with:
+          repository: sushant-me/mcpaudit
+          path: mcpaudit
+      - uses: actions/checkout@v5
+        with:
+          repository: sushant-me/policygate
+          path: policygate
+      - uses: actions/checkout@v5
+        with:
+          repository: sushant-me/mcp-nameguard
+          path: mcp-nameguard
+      - uses: actions/checkout@v5
+        with:
+          repository: sushant-me/trajectorycheck
+          path: trajectorycheck
+      - uses: actions/checkout@v5
+        with:
+          repository: sushant-me/tool-boundary-corpus
+          path: tool-boundary-corpus
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -58,10 +85,11 @@ jobs:
         run: python3 reputation/verify_evidence.py
 
       # The CVs and job-kit are not repositories, so this step covers what is
-      # reachable from CI: the profile, the hire page, the portfolio source and the
-      # evidence sheet. Running it with --require-all on the workstation covers the
-      # rest. `--min-surfaces 4` makes a run that found nothing to read fail.
+      # reachable from CI: the profile, the hire page, the portfolio source, the
+      # evidence sheet and the six project READMEs. Running it with --require-all
+      # on the workstation adds the CVs, job-kit and everything else. The
+      # --min-surfaces floor makes a run that found nothing to read fail.
       - name: Check the public surfaces for stale or wrong claims
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python3 reputation/check_surfaces.py --min-surfaces 4
+        run: python3 reputation/check_surfaces.py --min-surfaces 11

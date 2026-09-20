@@ -72,12 +72,34 @@ SURFACES = [
     "cv/*.md",
     "portfolio/src/app/page.tsx",
     "reputation/Sushant_Poudel_Evidence_Sheet.html",
+    "reputation/README.md",
     "job-kit/LINKEDIN.md",
     "job-kit/APPLICATIONS-READY.md",
     "job-kit/INTERVIEW-PREP.md",
     "job-kit/INTERVIEW-STRESS.md",
     "job-kit/PROPOSAL.md",
     "job-kit/PROPOSAL.html",
+    # The project READMEs are claims surfaces too, and they carry numbers of their
+    # own: rule counts, test counts, coverage figures, measured percentages. They
+    # live in sibling repositories on the workstation and are checked out beside
+    # this one in CI.
+    "agentbound/README.md",
+    "mcpaudit/README.md",
+    "policygate/README.md",
+    "mcp-nameguard/README.md",
+    "trajectorycheck/README.md",
+    "tool-boundary-corpus/README.md",
+]
+
+# Where a `releases/tag/vX.Y.Z` link means "this is the current release". Project
+# READMEs are excluded on purpose: the corpus README links v0.1.10 as the release
+# that *fixed* a false positive, which is history rather than a claim about the
+# latest, and flagging it would be a false positive of the checker's own.
+VERSION_CHECKED = [
+    "profile-readme/README.md",
+    "hire/index.html",
+    "portfolio/src/app/page.tsx",
+    "reputation/README.md",
 ]
 
 # A string that was published and was wrong. Each entry says why it is wrong, so
@@ -115,6 +137,10 @@ FORBIDDEN = {
     "#675 is under review": (
         "#675 is closed, and was closed with written evidence."
     ),
+    "90.8% on decisive rules": (
+        "the paper's own label is 'Rule A decision accuracy' over 'Rule A hard "
+        "denials'. Use its words, so a reader can find the row."
+    ),
     "[month year]": (
         "an unfilled placeholder on a public page; it now reads 'from graduation'."
     ),
@@ -141,6 +167,8 @@ REQUIRED: list[tuple[str, str, str]] = [
     ("profile-readme/README.md", "fails three", "the mutation numbers"),
     ("job-kit/INTERVIEW-STRESS.md", "fails 3", "the mutation numbers"),
     ("profile-readme/README.md", "117-byte", "the corrected size survives a reword"),
+    ("policygate/README.md", "Rule A hard-denial",
+     "the paper's own label, not a paraphrase of it"),
 ]
 
 
@@ -238,9 +266,12 @@ def main(argv: list[str] | None = None) -> int:
                 f"{target}: {what} - expected {phrase!r}, which is missing "
                 f"(a fix by deletion is not a fix)")
 
-    # 3. Live: a release label must be the release it names.
+    # 3. Live: a release label must be the release it names - on the surfaces where
+    #    linking a version means "this is the current one".
     version_links = 0
     for path in files:
+        if str(path.relative_to(WORKSPACE)) not in VERSION_CHECKED:
+            continue
         text = read(path)
         for repo, label in re.findall(
                 r"github\.com/sushant-me/([A-Za-z0-9_.-]+)/releases/tag/v([0-9][0-9.]*)",

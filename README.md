@@ -38,7 +38,12 @@ pages:
 |---|---|
 | "Merged into `google/go-github`" | merged, then **reverted the next day** in favour of the maintainer's broader fix — the page described code that is not in master |
 | "weakening either invariant fails six tests" | six is **both** invariants at once; each fails three |
-| "a 16 GiB allocation from a 5-byte header" | the issue says the input is **117 bytes**; nothing mentions five bytes |
+| a 16 GiB allocation attributed to a **five**-byte header | the issue says the input is **117 bytes**; nothing mentions five bytes |
+
+That last row is spelled out rather than quoted, because `check_surfaces.py` forbids
+the literal from this table down: a checker that exempts its own documentation is a
+checker with an escape hatch, and an escape hatch is what the error got through the
+first time.
 
 Every one was a detail *inside* a claim that had been true when written, which is
 precisely what a claim-level checker cannot see. So `check_surfaces.py` enforces the
