@@ -129,9 +129,6 @@ FORBIDDEN = {
     "weakening either the model-allow invariant or the unparseable-call path fails six": (
         "six is both invariants at once; each fails THREE tests in isolation."
     ),
-    "Weakening either\n  invariant fails six tests": (
-        "six is both invariants at once; each fails THREE tests in isolation."
-    ),
     "Patch merged into google/go-github": (
         "describes #4556's per-method check, which is not in master. The fix was "
         "merged and then generalised by the maintainer in #4564."
@@ -164,6 +161,9 @@ FORBIDDEN = {
     "18 self-authored cases": "the corpus grew to 19 cases.",
     "declaration scanner) — 13 cases": (
         "the tool-list subset grew to 14 cases with the regression case."
+    ),
+    "27 tests": (
+        "the corpus suite grew to 32 with the adapter tests; the README said 27."
     ),
     "Run every available": (
         "the conformance deliverable promised every scanner; the best-known one cannot be "
@@ -206,8 +206,13 @@ REQUIRED: list[tuple[str, str, str]] = [
     ("job-kit/outbox.json", "19 agent tool-boundary cases", "the corpus count"),
     ("writeups/2026-09-21-a-benchmark-found-a-bug-in-my-own-detector.md",
      "declaration scanner) — 14 cases", "the tool-list subset count"),
+    ("tool-boundary-corpus/README.md", "32 tests", "the suite count"),
     ("tool-boundary-corpus/README.md", "does not analyse locally",
-     "the third-party scanner limitation"),
+     "the Snyk offline limitation"),
+    ("tool-boundary-corpus/README.md", "adapters/mcp_scanner_adapter.py",
+     "the reproducible third-party comparison"),
+    ("job-kit/PROPOSAL.md", "measures the name instead of the capability",
+     "the measured third-party result"),
     ("job-kit/PROPOSAL.md", "does not analyse locally",
      "the third-party scanner limitation"),
     ("job-kit/PROPOSAL.html", "does not analyse locally",
@@ -301,6 +306,17 @@ def check_live_sites() -> tuple[list[str], int]:
     return problems, checked
 
 
+def normalise(text: str) -> str:
+    """Collapse all whitespace, so a phrase matches across a line wrap.
+
+    Prose wraps. This checker matched single-space literals against raw file text, so a
+    phrase the document happened to break across two lines did not match - which made a
+    **forbidden** string evadable by reformatting, and made two required strings fail on
+    documents that contained them. Matching happens on normalised text now.
+    """
+    return " ".join(text.split())
+
+
 def evidence_counts() -> dict[str, int]:
     """What `evidence.json` actually contains, computed rather than remembered.
 
@@ -375,8 +391,9 @@ def main(argv: list[str] | None = None) -> int:
         text = read(path)
         if not text:
             continue
+        flat = normalise(text)
         for phrase, why in FORBIDDEN.items():
-            if phrase in text:
+            if normalise(phrase) in flat:
                 problems.append(
                     f"{path.relative_to(WORKSPACE)}: contains {phrase!r} - {why}")
 
@@ -390,7 +407,7 @@ def main(argv: list[str] | None = None) -> int:
             if args.require_all:
                 problems.append(f"{what}: {target} is not present in this checkout")
             continue
-        if phrase not in read(path):
+        if normalise(phrase) not in normalise(read(path)):
             problems.append(
                 f"{target}: {what} - expected {phrase!r}, which is missing "
                 f"(a fix by deletion is not a fix)")
