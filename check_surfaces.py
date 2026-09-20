@@ -73,12 +73,10 @@ SURFACES = [
     "portfolio/src/app/page.tsx",
     "reputation/Sushant_Poudel_Evidence_Sheet.html",
     "reputation/README.md",
-    "job-kit/LINKEDIN.md",
-    "job-kit/APPLICATIONS-READY.md",
-    "job-kit/INTERVIEW-PREP.md",
-    "job-kit/INTERVIEW-STRESS.md",
-    "job-kit/PROPOSAL.md",
-    "job-kit/PROPOSAL.html",
+    # A glob rather than a list: a new document in job-kit is covered the moment it
+    # exists, instead of waiting for someone to remember to add it here.
+    "job-kit/*.md",
+    "job-kit/*.html",
     # The project READMEs are claims surfaces too, and they carry numbers of their
     # own: rule counts, test counts, coverage figures, measured percentages. They
     # live in sibling repositories on the workstation and are checked out beside
