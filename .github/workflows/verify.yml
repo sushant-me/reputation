@@ -86,6 +86,10 @@ jobs:
           path: agent-review-sample
       - uses: actions/checkout@v5
         with:
+          repository: sushant-me/mcp-audit-sample
+          path: mcp-audit-sample
+      - uses: actions/checkout@v5
+        with:
           repository: sushant-me/Edge-Native_Semantic_Firewall_
           path: Edge-Native_Semantic_Firewall_
 
@@ -109,4 +113,4 @@ jobs:
       - name: Check the public surfaces for stale or wrong claims
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python3 reputation/check_surfaces.py --min-surfaces 21
+        run: python3 reputation/check_surfaces.py --min-surfaces 22

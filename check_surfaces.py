@@ -99,6 +99,8 @@ SURFACES = [
     # by hand.
     "writeups/*.md",
     "agent-review-sample/*.md",
+    "mcp-audit-sample/*.md",
+    "mcp-audit-sample/audit/*.md",
     "Edge-Native_Semantic_Firewall_/README.md",
     "Edge-Native_Semantic_Firewall_/docs/*.md",
 ]
