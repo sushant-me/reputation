@@ -209,6 +209,62 @@ def read(path: pathlib.Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
 
 
+# The deployed pages, not the sources. Everything above checks files in the
+# repository, and a correction that is committed and not deployed is not a
+# correction. The ledger carried a "redeploy the portfolio" item for several rounds
+# while the host had in fact rebuilt itself on every push - a number nothing
+# recomputed, in the document that exists because of numbers nothing recomputed.
+LIVE_SITES = [
+    ("https://sushantpoudel2028.com.np/", "the portfolio",
+     ["117-byte", "generalised into"],
+     ["5-byte", "Patch merged into"]),
+    ("https://sushant-me.github.io/hire/", "the hire page",
+     ["117-byte input", "generalised into", "from graduation"],
+     ["month year"]),
+]
+
+
+def fetch(url: str, attempts: int = 3, pause: float = 4.0) -> str | None:
+    """Page text, retried: a CDN can serve the previous build for a few seconds."""
+    import time
+    import urllib.error
+    import urllib.request
+
+    request = urllib.request.Request(
+        url, headers={"User-Agent": "surface-checker/1.0"})
+    for attempt in range(attempts):
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                return response.read().decode("utf-8", "replace")
+        except (urllib.error.URLError, TimeoutError, OSError):
+            if attempt < attempts - 1:
+                time.sleep(pause)
+    return None
+
+
+def check_live_sites() -> tuple[list[str], int]:
+    problems: list[str] = []
+    checked = 0
+    for url, label, required, forbidden in LIVE_SITES:
+        text = fetch(url)
+        if text is None:
+            problems.append(f"{label} ({url}) could not be fetched - is it deployed?")
+            continue
+        for phrase in required:
+            checked += 1
+            if phrase not in text:
+                problems.append(
+                    f"{label} ({url}) does not contain {phrase!r}: the source has it, "
+                    "so the deployment is behind the repository")
+        for phrase in forbidden:
+            checked += 1
+            if phrase in text:
+                problems.append(
+                    f"{label} ({url}) still contains {phrase!r}, which was corrected in "
+                    "the source: the deployment is behind the repository")
+    return problems, checked
+
+
 def evidence_counts() -> dict[str, int]:
     """What `evidence.json` actually contains, computed rather than remembered.
 
@@ -318,7 +374,11 @@ def main(argv: list[str] | None = None) -> int:
                         f"{path.relative_to(WORKSPACE)}: says {found} for the {what}, "
                         f"but evidence.json has {truth[key]}")
 
-    # 4. Live: a release label must be the release it names - on the surfaces where
+    # 4. The deployed pages, which nothing else looks at.
+    live_problems, live_checked = check_live_sites()
+    problems.extend(live_problems)
+
+    # 5. Live: a release label must be the release it names - on the surfaces where
     #    linking a version means "this is the current one".
     version_links = 0
     for path in files:
@@ -343,6 +403,7 @@ def main(argv: list[str] | None = None) -> int:
         "forbidden_rules": len(FORBIDDEN),
         "required_rules": len(REQUIRED),
         "version_links_checked": version_links,
+        "live_pages_checked": live_checked,
         "counts_checked": counts_checked,
         "problems": problems,
     }
@@ -356,6 +417,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"forbidden strings:       {len(FORBIDDEN)} rules")
         print(f"required strings:        {len(REQUIRED)} assertions")
         print(f"release links checked:   {version_links}")
+        print(f"live pages checked:      {live_checked} assertions on {len(LIVE_SITES)} pages")
         print(f"prose counts checked:    {counts_checked} "
               f"(truth: {truth['claims']} claims, {truth['checked_live']} live, "
               f"{truth['on_request']} on request)")
