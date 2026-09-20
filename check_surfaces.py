@@ -165,6 +165,10 @@ FORBIDDEN = {
     "declaration scanner) — 13 cases": (
         "the tool-list subset grew to 14 cases with the regression case."
     ),
+    "Run every available": (
+        "the conformance deliverable promised every scanner; the best-known one cannot be "
+        "run offline, so it promises every scanner that can be."
+    ),
     "[month year]": (
         "an unfilled placeholder on a public page; it now reads 'from graduation'."
     ),
@@ -202,6 +206,14 @@ REQUIRED: list[tuple[str, str, str]] = [
     ("job-kit/outbox.json", "19 agent tool-boundary cases", "the corpus count"),
     ("writeups/2026-09-21-a-benchmark-found-a-bug-in-my-own-detector.md",
      "declaration scanner) — 14 cases", "the tool-list subset count"),
+    ("tool-boundary-corpus/README.md", "does not analyse locally",
+     "the third-party scanner limitation"),
+    ("job-kit/PROPOSAL.md", "does not analyse locally",
+     "the third-party scanner limitation"),
+    ("job-kit/PROPOSAL.html", "does not analyse locally",
+     "the third-party scanner limitation"),
+    ("hire/index.html", "Nothing leaves your machine",
+     "the local-analysis property"),
 ]
 
 
