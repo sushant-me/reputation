@@ -92,12 +92,17 @@
       },
       "verification": {
         "method": "github_issues_open",
-        "expect_state": "open"
+        "expect_state": "open",
+        "bodies_must_contain": {
+          "677": ["117-byte", "16 GiB"],
+          "679": ["28-byte", "2.4 GiB"],
+          "676": ["24-byte"]
+        }
       },
       "metrics": [
         "5 issues",
         "2.4 GiB from 28 bytes",
-        "16 GiB from a 5-byte header"
+        "16 GiB from a 117-byte input"
       ]
     },
     {

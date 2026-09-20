@@ -219,20 +219,43 @@ def check_github_prs_open_or_merged(claim: dict) -> tuple[str, str]:
 
 
 def check_github_issues_open(claim: dict) -> tuple[str, str]:
+    """The issues are open — and, where the claim publishes numbers, they are in the source.
+
+    The second half exists because of a real error: the profile said a 16 GiB
+    allocation came from "a 5-byte header" and the issue says the input is 117
+    bytes. The size appeared on nine surfaces including two attachable PDFs, and
+    nothing compared it to the text it was describing. A number in a claim is a
+    quotation of its source, so it gets checked like one.
+    """
     source = claim["source"]
-    open_numbers, closed = [], []
+    open_numbers, closed, wrong = [], [], []
+    expected = claim["verification"].get("bodies_must_contain", {})
     for number in source["numbers"]:
         issue = gh_api(f"repos/{source['repo']}/issues/{number}")
         if issue is None:
             closed.append(f"#{number} unreadable")
-        elif issue.get("state") == "open":
-            open_numbers.append(number)
-        else:
+            continue
+        if issue.get("state") != "open":
             closed.append(f"#{number} {issue.get('state')}")
+            continue
+        open_numbers.append(number)
+
+        for phrase in expected.get(str(number), []):
+            # The title counts as the source too: several of these numbers appear there.
+            haystack = f"{issue.get('title') or ''}\n{issue.get('body') or ''}"
+            if phrase not in haystack:
+                wrong.append(f"#{number} does not say {phrase!r}")
     if closed:
         return FAIL, "; ".join(closed)
-    return PASS, f"{len(open_numbers)} issues open: " + ", ".join(
-        f"#{n}" for n in open_numbers)
+    if wrong:
+        return FAIL, (
+            "; ".join(wrong) + " - the claim publishes a number its source does not state"
+        )
+    checked = sum(len(v) for v in expected.values())
+    note = f"{len(open_numbers)} issues open: " + ", ".join(f"#{n}" for n in open_numbers)
+    if checked:
+        note += f"; {checked} published figure(s) found in the source"
+    return PASS, note
 
 
 def check_public_repo_exists(claim: dict) -> tuple[str, str]:
