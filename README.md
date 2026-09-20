@@ -19,12 +19,35 @@ on-request  PREBAS accepted, 2026 IEEE RTC (Chicago)                  acceptance
 Run it yourself:
 
 ```bash
-python3 verify_evidence.py          # 18 claims: 14 checked live, 4 on request
-python3 verify_evidence.py --json    # same, machine-readable
+python3 verify_evidence.py            # 18 claims: 14 checked live, 4 on request
+python3 verify_evidence.py --json     # same, machine-readable
+python3 check_surfaces.py             # the pages a reader reaches
+python3 check_surfaces.py --require-all   # ...including the CVs and job-kit, on the workstation
 ```
 
 It exits non-zero the moment a claim stops being true, so a stale claim cannot
 sit here quietly: this README's badge goes red first.
+
+## The second checker, and why one was not enough
+
+`verify_evidence.py` checks the 18 top-level claims. It did **not** catch three
+errors that were later found by hand, one round at a time, all on already-published
+pages:
+
+| what the page said | what the source says |
+|---|---|
+| "Merged into `google/go-github`" | merged, then **reverted the next day** in favour of the maintainer's broader fix — the page described code that is not in master |
+| "weakening either invariant fails six tests" | six is **both** invariants at once; each fails three |
+| "a 16 GiB allocation from a 5-byte header" | the issue says the input is **117 bytes**; nothing mentions five bytes |
+
+Every one was a detail *inside* a claim that had been true when written, which is
+precisely what a claim-level checker cannot see. So `check_surfaces.py` enforces the
+error history itself: each wrong string is **forbidden** on every surface with the
+reason it is wrong, each corrected string is **required** so a fix-by-deletion
+fails, and every `releases/tag/vX.Y.Z` label must equal that repository's actual
+latest release. It reports how many of its surface declarations matched, and fails
+below `--min-surfaces`, because a check that found nothing to read is the same bug
+wearing a green tick.
 
 ## Why this exists
 
@@ -49,7 +72,11 @@ next to the verified ones as if it were the same kind of statement.
 
 - `evidence.json` — the claims, their sources, and the check each one requires.
 - `verify_evidence.py` — the checker (stdlib plus `gh` for the authenticated GitHub calls).
-- `.github/workflows/verify.yml` — runs it on push, weekly, and on demand.
+- `check_surfaces.py` — the other checker: forbidden and required strings across the
+  published pages, plus release-link freshness. CI checks out the sibling repositories
+  so it has four real surfaces; `--require-all` adds the CVs and `job-kit`, which are
+  not repositories and therefore only reachable from the workstation.
+- `.github/workflows/verify.yml` — runs both on push, weekly, and on demand.
 
 ## Honest limits
 
