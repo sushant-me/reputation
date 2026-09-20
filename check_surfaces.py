@@ -380,6 +380,49 @@ def corpus_case_count() -> int | None:
     return len(list(directory.glob("*.json")))
 
 
+def html_text(path: pathlib.Path) -> str:
+    """Visible text of an HTML document, for comparing against what it rendered to."""
+    import html as _html
+
+    raw = path.read_text(encoding="utf-8", errors="replace")
+    raw = re.sub(r"<(script|style)[^>]*>.*?</\1>", " ", raw, flags=re.S | re.I)
+    return _html.unescape(re.sub(r"<[^>]+>", " ", raw))
+
+
+def numbers(text: str) -> set[str]:
+    """Standalone numeric tokens. Wrapping and layout do not split a number."""
+    return set(re.findall(r"(?<![a-z0-9])(\d+(?:\.\d+)?)(?![a-z0-9])", text.lower().replace(",", "")))
+
+
+def check_pdf_sources(files: list[pathlib.Path]) -> list[str]:
+    """Every number in an attached PDF must still appear in the HTML it was rendered from.
+
+    The PDFs are rendered from their HTML by hand, so an edit to the HTML does not reach the
+    copy an employer or funder opens. That is not hypothetical: `PROPOSAL.pdf` still carried
+    the previous corpus count, in two sentences, after the number had been corrected in both
+    the `.md` and the `.html` and after specific rules had been added for it - the rules
+    matched the plain-text surfaces and had nothing to say about a PDF.
+
+    Comparing the *word* sets produced five false positives per document, all of them line
+    wrapping (`full-` + `stack`, a URL split across lines). Numbers do not wrap, so a number
+    that appears in the PDF and nowhere in the HTML is either a stale figure or a rendering
+    error, and it is the class of divergence that costs something.
+    """
+    problems: list[str] = []
+    for pdf in files:
+        if pdf.suffix != ".pdf":
+            continue
+        source = pdf.with_suffix(".html")
+        if not source.exists():
+            continue
+        stale = sorted(numbers(read(pdf)) - numbers(html_text(source)))
+        if stale:
+            problems.append(
+                f"{pdf.name} contains {stale}, which {source.name} no longer contains: the PDF "
+                "was not regenerated after the HTML changed")
+    return problems
+
+
 def evidence_counts() -> dict[str, int]:
     """What `evidence.json` actually contains, computed rather than remembered.
 
@@ -480,6 +523,8 @@ def main(argv: list[str] | None = None) -> int:
                 problems.append(
                     f"{directory}/{pdf.name} is a PDF in a scanned directory that no SURFACES "
                     "pattern matches, so nothing checks what it says")
+
+    problems.extend(check_pdf_sources(files))
 
     if args.require_all and missing_globs:
         problems.append(
