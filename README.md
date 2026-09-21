@@ -89,12 +89,16 @@ next to the verified ones as if it were the same kind of statement.
   published pages, plus release-link freshness. CI checks out the sibling repositories
   so it has four real surfaces; `--require-all` adds the CVs and `job-kit`, which are
   not repositories and therefore only reachable from the workstation.
-- `check_links.py` — the third checker: every external link on the two published pages
-  resolves. It fails on `404`/`410` and on malformed URLs, and deliberately does **not**
-  fail on `403`/`429` — a host declining automated clients says nothing about whether a
-  reader can reach the page. It exists because two dead project links sat on the
-  portfolio unnoticed: one pointed at a private repository, so it 404'd for every
-  visitor, and one had a phrase pasted into the URL. Nothing was watching either.
+- `check_links.py` — the third checker, covering both kinds of surface because both
+  rot the same way: the **live pages** a reader lands on, and the **local surfaces**
+  CI checks out beside this repo — the profile README, the project READMEs, the hire
+  page and the portfolio source. It fails on `404`/`410` and on malformed URLs, and
+  deliberately does **not** fail on `403`/`429`: a host declining automated clients
+  says nothing about whether a reader can reach the page. It exists because two dead
+  project links sat on the portfolio unnoticed — one pointed at a private repository
+  so it 404'd for every visitor, and one had a phrase pasted into the URL. If fewer
+  than six surfaces can be read it fails, because a run that found nothing to check
+  has not checked anything.
 - `.github/workflows/verify.yml` — runs all three on push, weekly, and on demand.
 
 ## Honest limits
