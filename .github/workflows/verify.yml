@@ -129,7 +129,7 @@ jobs:
       # the run on 404/410 and on malformed URLs, and deliberately does NOT fail on
       # 403/429 - a host declining automated clients says nothing about whether a
       # reader can reach the page, and a check that cries wolf gets switched off.
-      - name: Check that every external link on the published pages resolves
+      - name: Check that every external link on the pages and READMEs resolves
         run: python3 reputation/check_links.py
 
       # The guard on an unreadable PDF is only worth having if it fires, and the failure
