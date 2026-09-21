@@ -84,7 +84,7 @@
       "id": "s2geometry-issues",
       "category": "security-research",
       "claim": "Five open memory-safety issues in google/s2geometry, each with a standalone reproducer",
-      "detail": "NULL dereference on the library's documented traversal path (#674), out-of-bounds access from an unchecked shape id (#676), a 16 GiB allocation from unchecked counts (#677), a heap-buffer-overflow in EncodedS2LaxPolygonShape::edge (#678), and a 2.4 GiB allocation reachable from a 28-byte input (#679).",
+      "detail": "NULL dereference on the library's documented traversal path (#674), out-of-bounds access from an unchecked shape id (#676), a 16 GiB allocation from unchecked counts (#677), a heap-buffer-overflow in EncodedS2LaxPolygonShape::edge (#678), and a 2.4 GiB allocation reachable from a 28-byte input (#679). The maintainer responded that these are not reachable as a denial of service because the decoder is assumed to run on trusted data, that the assumptions should be documented better, and that fixes for some were already in progress internally.",
       "source": {
         "kind": "github_issues",
         "repo": "google/s2geometry",
@@ -134,6 +134,54 @@
       },
       "verification": {
         "method": "github_prs_open_or_merged"
+      }
+    },
+    {
+      "id": "sisakulint-verified-by-maintainer",
+      "category": "open-source",
+      "claim": "The maintainer of sisaku-security/sisakulint independently reproduced the finding in a rule I contributed before accepting it as real",
+      "detail": "Rather than taking the premise on trust, on-keyday built both revisions of the rule (17c2d821 and 2273a001) and ran them over the same inputs, then wrote that the gap is real and the direction is reasonable. The quotation is checked against their own comment, so a deleted or edited comment takes the claim down with it.",
+      "source": {
+        "kind": "github_pr_comment",
+        "repo": "sisaku-security/sisakulint",
+        "number": 644,
+        "author": "on-keyday"
+      },
+      "verification": {
+        "method": "named_person_said",
+        "must_contain": [
+          "we built both `17c2d821` and `2273a001` and ran them over the same inputs",
+          "The gap is real and the direction you took to it is a reasonable one"
+        ]
+      }
+    },
+    {
+      "id": "sisakulint-audit-filed",
+      "category": "open-source",
+      "claim": "Three tracked issues in sisaku-security/sisakulint were filed from an audit I ran over six of its AI-action rules",
+      "detail": "The audit examined six rules and found defects in five; the maintainer filed #646, #647 and #648 to cover the sibling-rule findings, and cites the work in the issue bodies. The PR that carried the audit was closed for review capacity, not for being wrong.",
+      "source": {
+        "kind": "github_issues",
+        "repo": "sisaku-security/sisakulint",
+        "numbers": [
+          646,
+          647,
+          648
+        ]
+      },
+      "verification": {
+        "method": "github_issues_open",
+        "bodies_must_contain": {
+          "646": [
+            "`claude_args` is scanned as one raw string"
+          ],
+          "647": [
+            "the check looks for `--dangerouslySkipPermissions`"
+          ],
+          "648": [
+            "the rule reads one codex-action input, `safety-strategy`"
+          ]
+        }
       }
     },
     {

@@ -373,6 +373,41 @@ def check_github_advisories(claim: dict) -> tuple[str, str]:
     return PASS, f"{len(checked)} published: " + ", ".join(checked)
 
 
+def check_named_person_said(claim: dict) -> tuple[str, str]:
+    """A named person wrote the quoted words, on the named thread.
+
+    This is how a third-party endorsement gets checked. A claim that leans on
+    someone else's judgement is only worth what the quotation is worth, so the
+    quotation is looked for in that person's own comment rather than in a
+    summary of it. If they edit or delete the comment, the claim goes red.
+    """
+    source = claim["source"]
+    repo, number, author = source["repo"], source["number"], source["author"]
+    wanted = claim["verification"].get("must_contain", [])
+    if not wanted:
+        return FAIL, "no quotation configured for this claim"
+
+    comments = gh_api(f"repos/{repo}/issues/{number}/comments")
+    if not isinstance(comments, list):
+        return FAIL, f"could not read comments on {repo}#{number}"
+
+    theirs = [
+        c for c in comments
+        if ((c.get("user") or {}).get("login") or "").lower() == author.lower()
+    ]
+    if not theirs:
+        return FAIL, f"{author} has no comment on {repo}#{number}"
+
+    bodies = "\n".join(c.get("body") or "" for c in theirs)
+    missing = [phrase for phrase in wanted if phrase not in bodies]
+    if missing:
+        return FAIL, (
+            f"{author}'s comment on {repo}#{number} does not say {missing[0]!r} "
+            "- or has been edited since"
+        )
+    return PASS, f"{author} on {repo}#{number}: {len(wanted)} quoted phrase(s) verified"
+
+
 CHECKS = {
     "hackinghub_rank": check_hackinghub_rank,
     "github_pr_merged": check_github_pr_merged,
@@ -380,6 +415,7 @@ CHECKS = {
     "github_pr_open_or_merged": check_github_pr_open_or_merged,
     "github_prs_open_or_merged": check_github_prs_open_or_merged,
     "github_issues_open": check_github_issues_open,
+    "named_person_said": check_named_person_said,
     "paper_artifacts_reproduce": check_paper_artifacts_reproduce,
     "public_repo_exists": check_public_repo_exists,
     "github_advisories": check_github_advisories,

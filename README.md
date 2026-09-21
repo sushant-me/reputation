@@ -10,6 +10,8 @@ PASS        Rank 1 on the HackingHub Q3 2026 global leaderboard       rank 1, 11
 PASS        Pull request merged into google/go-github                merged 2026-09-17 by gmlewis
 PASS        Five open memory-safety issues in google/s2geometry      5 issues open: #674, #676..#679
 PASS        Two hardening pull requests under review in s2geometry   s2geometry#681 open, #682 open
+PASS        A maintainer independently reproduced my finding          on-keyday built both revisions and ran them
+PASS        Three sisakulint issues filed from my rule audit          #646, #647, #648 open
 PASS        Fixes and reports for MCP tool shadowing                 adk-go#1606, adk-java#1515, adk-python#7145
 PASS        An OSS-Fuzz harness that was testing nothing, fixed      0.00% -> 93% line coverage
 on-request  AI Engineer at Atmos SoftTech, March 2024 - March 2026    signed experience letter
@@ -19,11 +21,16 @@ on-request  PREBAS accepted, 2026 IEEE RTC (Chicago)                  acceptance
 Run it yourself:
 
 ```bash
-python3 verify_evidence.py            # 21 claims: 17 checked live, 4 on request
+python3 verify_evidence.py            # 23 claims: 19 checked live, 4 on request
 python3 verify_evidence.py --json     # same, machine-readable
 python3 check_surfaces.py             # the pages a reader reaches
 python3 check_surfaces.py --require-all   # ...including the CVs and job-kit, on the workstation
 ```
+
+The maintainer row is checked by looking for their own words in their own
+comment — the `named_person_said` method in `evidence.json`. An endorsement
+nobody can point at is not evidence, so the quotation is the thing that is
+verified, and editing the comment takes the claim down with it.
 
 It exits non-zero the moment a claim stops being true, so a stale claim cannot
 sit here quietly: this README's badge goes red first.
