@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this software in work you publish, please cite it as below."
+title: "reputation"
+type: software
+authors:
+  - family-names: Poudel
+    given-names: Sushant
+    email: sushant.poudel2028@gmail.com
+    affiliation: "Nepal Engineering College, Bhaktapur, Nepal"
+    # Register an ORCID iD and add it here — it is the identifier that
+    # disambiguates this author from other researchers of the same name:
+    # orcid: "https://orcid.org/0000-0000-0000-0000"
+abstract: >-
+  Every claim Sushant Poudel makes about his own work, each with the public source it came from, re-checked weekly by a script anyone can run.
+keywords:
+  - ai-security
+  - ai-agents
+  - python
+license: MIT
+repository-code: "https://github.com/sushant-me/reputation"
