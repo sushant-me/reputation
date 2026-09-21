@@ -123,6 +123,15 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 reputation/check_surfaces.py --min-surfaces 22
 
+      # Dead links rot silently. Two were found on the portfolio by hand: one to a
+      # repository that is private, so it 404'd for every visitor, and one with a
+      # phrase pasted into the URL. Nothing was watching either of them. This fails
+      # the run on 404/410 and on malformed URLs, and deliberately does NOT fail on
+      # 403/429 - a host declining automated clients says nothing about whether a
+      # reader can reach the page, and a check that cries wolf gets switched off.
+      - name: Check that every external link on the published pages resolves
+        run: python3 reputation/check_links.py
+
       # The guard on an unreadable PDF is only worth having if it fires, and the failure
       # mode it was written for is silence: an empty read made every PDF assertion pass.
       # So the guard is mutation-tested here - hide pdftotext behind a command that fails,

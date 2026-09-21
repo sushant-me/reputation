@@ -25,6 +25,7 @@ python3 verify_evidence.py            # 23 claims: 19 checked live, 4 on request
 python3 verify_evidence.py --json     # same, machine-readable
 python3 check_surfaces.py             # the pages a reader reaches
 python3 check_surfaces.py --require-all   # ...including the CVs and job-kit, on the workstation
+python3 check_links.py                # every external link on those pages still resolves
 ```
 
 The maintainer row is checked by looking for their own words in their own
@@ -88,7 +89,13 @@ next to the verified ones as if it were the same kind of statement.
   published pages, plus release-link freshness. CI checks out the sibling repositories
   so it has four real surfaces; `--require-all` adds the CVs and `job-kit`, which are
   not repositories and therefore only reachable from the workstation.
-- `.github/workflows/verify.yml` — runs both on push, weekly, and on demand.
+- `check_links.py` — the third checker: every external link on the two published pages
+  resolves. It fails on `404`/`410` and on malformed URLs, and deliberately does **not**
+  fail on `403`/`429` — a host declining automated clients says nothing about whether a
+  reader can reach the page. It exists because two dead project links sat on the
+  portfolio unnoticed: one pointed at a private repository, so it 404'd for every
+  visitor, and one had a phrase pasted into the URL. Nothing was watching either.
+- `.github/workflows/verify.yml` — runs all three on push, weekly, and on demand.
 
 ## Honest limits
 
