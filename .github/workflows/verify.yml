@@ -149,3 +149,29 @@ jobs:
             exit 1
           fi
           echo "unreadable PDF is reported, not skipped: ok"
+
+      # The same discipline for the rule-count guard. A count that agrees with the
+      # source today says nothing about whether it would disagree tomorrow, and this
+      # claim spent a release saying "five rules" against nine registered ones while
+      # its verification only checked that the repository existed. So the claim is
+      # mutated back to the value that was actually published, and the check must
+      # reject it. If it passes, the number has gone decorative again.
+      - name: The rule-count guard fires
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 - <<'PYEOF'
+          import copy, json, sys
+          sys.path.insert(0, "reputation")
+          import verify_evidence as v
+
+          claims = json.load(open("reputation/evidence.json", encoding="utf-8"))["claims"]
+          claim = next(c for c in claims if c.get("id") == "tool-agentbound")
+          stale = copy.deepcopy(claim)
+          stale["verification"]["expect"]["registered_rules"] = 5  # the published value
+          status, note = v.check_agentbound_rule_count(stale)
+          if status == v.PASS:
+              print("::error::a stale rule count was accepted; the guard is not firing")
+              sys.exit(1)
+          print(f"stale rule count rejected, as required: {note}")
+          PYEOF

@@ -19,8 +19,10 @@ authenticated), the rest over urllib.
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import pathlib
+import re
 import subprocess
 import sys
 import urllib.error
@@ -332,6 +334,44 @@ def check_paper_artifacts_reproduce(claim: dict) -> tuple[str, str]:
                   + "; ".join(labels))
 
 
+def check_agentbound_rule_count(claim: dict) -> tuple[str, str]:
+    """The stated detector count equals what agentbound actually registers.
+
+    A count is the easiest claim in this file to leave behind. Adding a detector
+    does not touch the sentence that says how many there are, so the two drift and
+    nothing notices - which is what happened here: this claim shipped saying
+    "five rules" while the package registered nine, and its verification was
+    `public_repo_exists`, which checks that the repository exists, not that the
+    sentence is true.
+
+    So the count is read out of the source rather than restated. Add or remove a
+    registered rule and this goes red until the claim is corrected, which is the
+    only version of this number that stays true on its own.
+    """
+    expect = claim["verification"]["expect"]["registered_rules"]
+    blob = gh_api("repos/sushant-me/agentbound/contents/agentbound/rules.py")
+    if not isinstance(blob, dict) or blob.get("encoding") != "base64":
+        return FAIL, "agentbound/agentbound/rules.py unreadable"
+    try:
+        src = base64.b64decode(blob.get("content", "")).decode("utf-8", "replace")
+    except (ValueError, TypeError) as exc:
+        return FAIL, f"rules.py undecodable: {type(exc).__name__}"
+
+    names: list[str] = []
+    for registry in ("FILE_RULES", "PROJECT_RULES"):
+        block = re.search(registry + r"\s*=\s*\[(.*?)\]", src, re.S)
+        if block is None:
+            return FAIL, f"{registry} not found in rules.py"
+        names.extend(re.findall(r"rule_\w+", block.group(1)))
+    if not names:
+        return FAIL, "no rules parsed out of rules.py"
+
+    if len(names) != expect:
+        return FAIL, (f"rules.py registers {len(names)} rules, the claim says {expect} "
+                      f"({', '.join(sorted(names))})")
+    return PASS, f"{len(names)} registered rules match the claim of {expect}"
+
+
 def check_public_repo_exists(claim: dict) -> tuple[str, str]:
     url = claim["source"]["url"]
     slug = url.rstrip("/").split("github.com/")[-1]
@@ -418,6 +458,7 @@ CHECKS = {
     "named_person_said": check_named_person_said,
     "paper_artifacts_reproduce": check_paper_artifacts_reproduce,
     "public_repo_exists": check_public_repo_exists,
+    "agentbound_rule_count": check_agentbound_rule_count,
     "github_advisories": check_github_advisories,
 }
 
