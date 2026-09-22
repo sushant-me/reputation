@@ -26,6 +26,8 @@ python3 verify_evidence.py --json     # same, machine-readable
 python3 check_surfaces.py             # the pages a reader reaches
 python3 check_surfaces.py --require-all   # ...including the CVs and job-kit, on the workstation
 python3 check_links.py                # every external link on those pages still resolves
+python3 check_secrets.py --self-test  # the credential detector fires on a known leak
+python3 check_secrets.py              # ...then scans every owned repository
 ```
 
 The maintainer row is checked by looking for their own words in their own
@@ -35,6 +37,37 @@ verified, and editing the comment takes the claim down with it.
 
 It exits non-zero the moment a claim stops being true, so a stale claim cannot
 sit here quietly: this README's badge goes red first.
+
+## The credential scan, and its one open finding
+
+GitHub's free secret scanning matches **provider** patterns — AWS `AKIA…`, GitHub
+`ghp_…`, Stripe `sk_live_…`. A plain `KEY = "value"` assignment is not one of
+those, and the detector that covers it (`secret_scanning_non_provider_patterns`)
+is part of paid Secret Protection: setting it through the API is accepted and
+silently ignored, and it reads back `disabled`.
+
+For fifteen months, then, the platform reported a clean account while
+`sentiment-analysis` — public, and since archived — carried a live Twitter/X
+OAuth set in a file called `api key.txt`: consumer key, consumer secret, access
+token and access-token secret. The `secret-scanning/alerts` endpoint returned
+`[]` for that repository, which is correct behaviour and not a safe answer.
+
+`check_secrets.py` closes that gap from outside. **The scan is red on purpose,
+and that is the honest state:**
+
+- the four credentials **have not been rotated**, and rotation is the only real
+  remediation — the blob is public, and deleting the file does not un-publish it;
+- the repository is **archived**, so it is read-only and GitHub rejects the
+  delete over the API: it needs unarchiving first.
+
+It is built to fail loudly rather than quietly. There is a coverage floor, since
+a scan that read nothing must not look like a clean account; every reported value
+is redacted, so the CI log does not become a second copy of the credential; and
+`--self-test` proves the detector fires on the original leak shape. That self-test
+earned its place immediately — the placeholder filter began with an empty
+alternative, matched every string, rejected all of them, and the detector
+reported nothing at all. Without a fixture for the real shape, it would have
+shipped as a check that could never fire.
 
 ## The second checker, and why one was not enough
 

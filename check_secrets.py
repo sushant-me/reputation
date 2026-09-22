@@ -404,6 +404,18 @@ def main() -> int:
         repos = [r for r in repos if r["name"] in set(args.repo)]
     if not repos:
         print("::error::no repositories enumerated; the scan could not run")
+        print()
+        print("  In CI this almost always means the token cannot see the account.")
+        print("  The workflow's own GITHUB_TOKEN is scoped to this repository alone,")
+        print("  so it cannot enumerate the rest - and the one real finding lived in")
+        print("  a different repository.")
+        print()
+        print("  Fix: add a fine-grained PAT with read access to the account's public")
+        print("  repositories as the repository secret REPUTATION_TOKEN.")
+        print("  See .github/workflows/secrets.yml.")
+        print()
+        print("  A pass here would have meant 'I read nothing and found nothing',")
+        print("  which is why this exits non-zero instead.")
         return 1
 
     print(f"scanning {len(repos)} owned repositories (archived included)\n")
