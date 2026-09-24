@@ -6,7 +6,7 @@ re-checks all of them against those sources on every push and once a week.
 
 ```
 STATUS      CLAIM                                                    NOTE
-PASS        Rank 1 on the HackingHub Q3 2026 global leaderboard       rank 1, 133 flags, 13625 XP
+PASS        Rank 1 on the HackingHub Q3 2026 global leaderboard       rank 1, 142 flags, 14525 XP
 PASS        Pull request merged into google/go-github                merged 2026-09-17 by gmlewis
 PASS        Five open memory-safety issues in google/s2geometry      5 issues open: #674, #676..#679
 PASS        Two hardening pull requests under review in s2geometry   s2geometry#681 open, #682 open
