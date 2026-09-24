@@ -541,6 +541,73 @@ def latest_release(repo: str) -> str | None:
     return entries[0]["tagName"] if entries else None
 
 
+def hackinghub_figure_disagreements(files: list[pathlib.Path]) -> list[str]:
+    """A surface that states the HackingHub figure must state the *current* one.
+
+    That figure is replicated across sixteen artifacts -- profile README, hire
+    page, portfolio, three CV variants in four formats, the evidence sheet,
+    evidence.json -- and `verify_evidence.py` reads back exactly one of them. It
+    went stale twice in a single day for that reason: the board moves, one file is
+    checked, and the other fifteen are corrected by hand.
+
+    A number replicated sixteen ways should be derived from one place. Where it
+    cannot be, it should at least be *compared* to one place, which is what this
+    does: the expected value comes from `evidence.json` -- the file that is
+    actually verified against the live API -- and every other surface that states
+    a different one is a failure.
+
+    Two deliberate limitations:
+
+    * ``.pdf`` is skipped. These are the artifacts that reach an employer, and
+      they matter most; but they are binary, a regex over one is not a check, and
+      they are generated from the HTML that *is* checked here. They are covered
+      by being regenerated from a checked source, not by this function.
+    * The next-ranked account's figures (``... holds 97 flags``) are a different
+      claim and are excluded, or this would fail on correct data.
+    """
+    import json
+    import re
+
+    try:
+        evidence = json.loads((HERE / "evidence.json").read_text())
+        claim = next(c for c in evidence["claims"]
+                     if c["id"] == "hackinghub-rank-1")
+    except Exception:
+        return []          # verify_evidence.py owns that file and reports on it
+
+    flags = claim["verification"]["expect"]["flags"]
+    xp = claim["verification"]["expect"]["xp"]
+
+    # The runner-up's figure is a different claim. Enumerating the phrasings is
+    # fragile -- the first version of this looked only for "next"/"account holds"
+    # and a CV saying "ahead of a runner-up on 97 flags" tripped it -- so the
+    # marker list is deliberately broad, and a false positive here is a loud
+    # failure on correct data.
+    other = re.compile(
+        r"(next|runner[- ]?up|second|behind|ahead of|account holds|the account)",
+        re.I)
+
+    problems: list[str] = []
+    for path in files:
+        if path.suffix == ".pdf":
+            continue
+        try:
+            text = path.read_text(errors="replace")
+        except Exception:
+            continue
+        for match in re.finditer(r"(\d[\d,]*) (?:flags|XP)", text):
+            if other.search(text[max(0, match.start() - 60):match.start()]):
+                continue
+            stated = int(match.group(1).replace(",", ""))
+            unit = match.group(0).split()[-1]
+            expected = flags if unit == "flags" else xp
+            if stated != expected:
+                problems.append(
+                    f"{path.relative_to(WORKSPACE)} states {match.group(0)!r} "
+                    f"but evidence.json says {expected} {unit}")
+    return problems
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--json", action="store_true")
@@ -554,6 +621,9 @@ def main(argv: list[str] | None = None) -> int:
 
     files, missing_globs = surface_files()
     problems: list[str] = []
+
+    # 0c. A figure replicated across surfaces must agree across surfaces.
+    problems.extend(hackinghub_figure_disagreements(files))
 
     # 0. Coverage first. This checker is about numbers nothing re-derived, and a
     #    run that finds no files is the same bug wearing a green tick.
