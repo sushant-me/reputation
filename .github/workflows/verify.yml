@@ -132,6 +132,21 @@ jobs:
       - name: Check that every external link on the pages and READMEs resolves
         run: python3 reputation/check_links.py
 
+      # A link that resolves is not the same as a row that exists. The writeups
+      # index listed six posts while nine existed - both posts from 2026-09-23
+      # among the missing, and every link in the table resolved the entire time,
+      # so check_links.py could not see it. This compares the directory to the
+      # table instead of reading the table on its own.
+      - name: Check that every post is listed in the writeups index
+        run: python3 reputation/check_writeups_index.py
+
+      # Same discipline as the other guards here: the failure mode is silence, so
+      # the check is fed a partial index and required to go red, and a complete one
+      # and required to stay quiet. A guard that cannot be shown to fire is not a
+      # guard.
+      - name: The writeups-index guard fires on a partial index
+        run: python3 reputation/check_writeups_index.py --self-test
+
       # The guard on an unreadable PDF is only worth having if it fires, and the failure
       # mode it was written for is silence: an empty read made every PDF assertion pass.
       # So the guard is mutation-tested here - hide pdftotext behind a command that fails,
