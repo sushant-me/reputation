@@ -14,7 +14,7 @@
       "id": "hackinghub-rank-1",
       "category": "recognition",
       "claim": "Rank 1 on the HackingHub Q3 2026 global leaderboard",
-      "detail": "116 flags and 11,860 XP, with 2 silver and 1 bronze award. The next-ranked account holds 97 flags / 10,095 XP.",
+      "detail": "133 flags and 13,625 XP, with 2 silver and 1 bronze award. The next-ranked account holds 97 flags / 10,095 XP.",
       "source": {
         "kind": "api",
         "url": "https://api.hackinghub.io/leaderboard",
@@ -25,13 +25,13 @@
         "expect": {
           "username": "nofear976",
           "rank": 1,
-          "flags": 116,
-          "xp": 11860
+          "flags": 133,
+          "xp": 13625
         }
       },
       "metrics": [
-        "116 flags",
-        "11,860 XP",
+        "133 flags",
+        "13,625 XP",
         "2 silver + 1 bronze award"
       ]
     },
