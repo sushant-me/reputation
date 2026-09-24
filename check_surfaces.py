@@ -99,6 +99,12 @@ SURFACES = [
     "mcp-nameguard/README.md",
     "trajectorycheck/README.md",
     "tool-boundary-corpus/README.md",
+    # beyond-attention makes measured claims too, and it was not scanned -- the
+    # same omission the comment above describes. Its README carries the
+    # learned-gate numbers, including one row that does NOT reproduce across
+    # Python versions, and the correction that the gate's discrete decision was
+    # already exactly right. Those are exactly the claims worth re-reading.
+    "beyond-attention/README.md",
     # The posts and the work samples are public claims surfaces too. The benchmark
     # post states precision and recall; the version of the test count it corrects
     # lives in it; the review sample asserts four findings reproduce. None of them
@@ -209,6 +215,16 @@ FORBIDDEN = {
 # each rule names the file and the exact string that file should carry.
 REQUIRED: list[tuple[str, str, str]] = [
     # (file, phrase that must appear, what it protects)
+    ("beyond-attention/README.md", "0.420",
+     "the unflattering raw-gate number survives an edit"),
+    ("beyond-attention/README.md", "does not reproduce across Python versions",
+     "the cross-version reproducibility limit is not quietly dropped"),
+    ("beyond-attention/README.md", "ten orders of magnitude",
+     "the measured reason annealing is the fragile row"),
+    ("beyond-attention/README.md", "0.160",
+     "the straight-through negative result"),
+    ("beyond-attention/README.md", "no-op on the discrete answer",
+     "the correction, not the original overstatement"),
     ("profile-readme/README.md", "117-byte input", "the s2geometry input size"),
     ("hire/index.html", "117-byte input", "the s2geometry input size"),
     ("cv/Sushant_Poudel_CV_AISecurity.html", "117-byte input", "the s2geometry input size"),

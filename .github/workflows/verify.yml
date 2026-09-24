@@ -78,6 +78,10 @@ jobs:
       # numbers. They were not scanned because the list was written by hand.
       - uses: actions/checkout@v5
         with:
+          repository: sushant-me/beyond-attention
+          path: beyond-attention
+      - uses: actions/checkout@v5
+        with:
           repository: sushant-me/writeups
           path: writeups
       - uses: actions/checkout@v5
