@@ -79,10 +79,20 @@ OWNER = "sushant-me"
 MIN_FILES_READ = 25
 
 # Caps so the scan stays inside the hourly API budget and finishes quickly. When
-# a cap bites, it is reported - truncation is never silent.
+# a cap bites, it is reported - truncation is never silent, and since the false
+# clean below was found it is also fatal.
+#
+# MAX_FILE_FETCHES was 600. That was measured wrong: the account holds 90 owned
+# repositories and a complete scan reads 1208 files, so the cap cut the scan off
+# at roughly half. Because `skipped` did not touch the exit code, the run still
+# printed "no credential-shaped values found" and exited 0 with forty repositories
+# never opened - including the ones most likely to matter (reputation, policygate,
+# tool-boundary-corpus, writeups, Portfolio). The value below sits above the
+# measured need with headroom; if the estate outgrows it the run fails rather than
+# quietly narrowing its own coverage.
 MAX_FILES_PER_REPO = 40
 MAX_CONTENT_BYTES = 256 * 1024
-MAX_FILE_FETCHES = 600
+MAX_FILE_FETCHES = 2500
 
 # Names that suggest a file could carry a credential.
 SUSPICIOUS_NAME = re.compile(
@@ -473,6 +483,20 @@ def main() -> int:
     if read_count < MIN_FILES_READ:
         print(f"::error::only {read_count} file(s) read, below the {MIN_FILES_READ} floor;")
         print("         this is not evidence of a clean account")
+        return 1
+
+    # A truncated scan is the same failure as reading nothing, one step later: the
+    # repositories that were never opened include the one holding the finding this
+    # script exists for. Reporting green over them is the "check that cannot fail"
+    # this file spends its docstring warning about, so it fails here instead.
+    if skipped:
+        print(f"::error::{len(skipped)} repository(ies) were never scanned because the")
+        print(f"         fetch cap ({MAX_FILE_FETCHES}) was reached:")
+        for s in skipped:
+            print(f"           - {s}")
+        print("         a partial scan is not evidence of a clean account. Raise")
+        print(f"         MAX_FILE_FETCHES (currently {MAX_FILE_FETCHES}) above the estate's")
+        print("         real size rather than reading this as green.")
         return 1
 
     print("no credential-shaped values found in public repositories")
