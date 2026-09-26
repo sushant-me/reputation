@@ -77,6 +77,18 @@ LOCAL_SURFACES = [
 # sibling, but a run that read almost nothing is not evidence that the links work.
 MIN_SOURCES = 6
 
+# A floor on links actually VERIFIED, which is a different failure from reading
+# nothing and was not covered. An unreachable link is classified as unverified
+# rather than broken - deliberately, so a LinkedIn 999 or a five-minute outage does
+# not cry wolf - but that makes a total network failure indistinguishable from a
+# clean sheet: every link lands in `unverified`, `broken` stays empty, and the run
+# printed "PASS 0 of 62 external links resolve ... and exited 0". Demonstrated by
+# stubbing the fetcher to report every URL unreachable.
+#
+# Half is a floor with a wide margin on purpose: the estate currently verifies 61
+# of 62, so the only way to trip this is to reach almost nothing.
+MIN_VERIFIED_FRACTION = 0.5
+
 # Assets and services that are not pages a reader follows: fonts, badge images, and
 # the vocabularies a search engine reads rather than a person.
 SKIP = (
@@ -236,7 +248,20 @@ def main() -> int:
             f"and {len(malformed_links)} are malformed. Repoint or remove them."
         )
         return 1
+
     checked = len(all_links) - len(unverified)
+
+    # Passing over links that were never reached is the same failure as reading no
+    # files, one step later - see MIN_VERIFIED_FRACTION.
+    if len(requestable) and checked < len(requestable) * MIN_VERIFIED_FRACTION:
+        print(
+            f"::error::only {checked} of {len(requestable)} links could be verified; "
+            f"{len(unverified)} were unreachable.\n"
+            "         A run that reached almost nothing is not evidence that the links "
+            "work. Check the network or the fetcher, then re-run."
+        )
+        return 1
+
     print(
         f"PASS  {checked} of {len(all_links)} external links resolve across "
         f"{sources_read} surfaces; {len(unverified)} could not be verified from CI and "

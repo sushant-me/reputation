@@ -136,6 +136,30 @@ jobs:
       - name: Check that every external link on the pages and READMEs resolves
         run: python3 reputation/check_links.py
 
+      # The floor on VERIFIED links, mutation-tested for the same reason as the rest.
+      # An unreachable link is classified as unverified rather than broken - on purpose,
+      # so a 999 or a five-minute outage does not cry wolf - which made a total network
+      # failure indistinguishable from a clean sheet: every link landed in `unverified`,
+      # `broken` stayed empty, and the run printed "PASS 0 of 62 external links resolve"
+      # and exited 0. The fetcher is stubbed here so every URL is unreachable, and the
+      # checker must go red. If it passes, nothing is watching whether links were
+      # reached at all.
+      - name: The verified-link floor fires when nothing could be reached
+        run: |
+          python3 - <<'PYEOF'
+          import importlib.util, sys
+          spec = importlib.util.spec_from_file_location("cl", "reputation/check_links.py")
+          m = importlib.util.module_from_spec(spec)
+          sys.modules["cl"] = m
+          spec.loader.exec_module(m)
+
+          m.status_of = lambda url: (None, "simulated outage")
+          if m.main() == 0:
+              print("::error::a run that verified no links passed; the floor is not firing")
+              sys.exit(1)
+          print("the verified-link floor fired on a total outage, as required")
+          PYEOF
+
       # A link that resolves is not the same as a row that exists. The writeups
       # index listed six posts while nine existed - both posts from 2026-09-23
       # among the missing, and every link in the table resolved the entire time,
