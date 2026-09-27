@@ -217,8 +217,16 @@ REQUIRED: list[tuple[str, str, str]] = [
     # (file, phrase that must appear, what it protects)
     ("beyond-attention/README.md", "0.420",
      "the unflattering raw-gate number survives an edit"),
-    ("beyond-attention/README.md", "does not reproduce across Python versions",
-     "the cross-version reproducibility limit is not quietly dropped"),
+    # This pinned "does not reproduce across Python versions" until
+    # beyond-attention corrected the section it names: the row moves on seed
+    # *and* on platform, 3.11 is not an exception, and believing it was one is
+    # what made that repository's own check fail at random. Pinning the
+    # superseded wording made this rule fire on the more accurate section -
+    # a guard reporting an error that is not an error, which is the failure the
+    # comment above warns about, pointed the other way. What it protects is
+    # unchanged: the limit stays stated. So it follows the wording that is true.
+    ("beyond-attention/README.md", "One published row does not reproduce",
+     "the reproducibility limit is not quietly dropped"),
     ("beyond-attention/README.md", "ten orders of magnitude",
      "the measured reason annealing is the fragile row"),
     ("beyond-attention/README.md", "0.160",
