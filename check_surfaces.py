@@ -78,6 +78,14 @@ SURFACES = [
     "reputation/*.pdf",
     "job-kit/*.pdf",
     "portfolio/src/app/page.tsx",
+    # The publications *content*, not only the page that renders it. This file was the one
+    # surface no rule reached, and it is where a live, indexed claim went unchecked: it
+    # published a manuscript naming a benchmark corpus that was never built, beside an earlier
+    # draft of a paper whose headline figures the authors' own repository had already measured
+    # false and withdrawn. `page.tsx` was scanned and did not contain them, because the strings
+    # live here. A surface list built from the pages a reader sees will always miss the data
+    # those pages are built from.
+    "portfolio/content/publications.ts",
     "reputation/Sushant_Poudel_Evidence_Sheet.html",
     # A glob for the same reason as job-kit: the ledger and the README both state
     # claim counts, and the ledger was not being scanned at all.
@@ -132,6 +140,31 @@ VERSION_CHECKED = [
 # A string that was published and was wrong. Each entry says why it is wrong, so
 # the failure message is an explanation rather than a rule number.
 FORBIDDEN = {
+    # A whole manuscript described a corpus that does not exist. The name appeared in exactly
+    # one place in the workspace -- the abstract published on the portfolio -- with no code, no
+    # corpus, no results file and no repository anywhere behind it, and it was served with
+    # citation markup next to a paper that genuinely ships its artifacts. Forbidden outright:
+    # there is no legitimate use of this name, anywhere, in any document.
+    "MAPI-6K": (
+        "no such dataset was ever built. The manuscript naming it has been withdrawn; "
+        "the name must not reappear on any surface."
+    ),
+    "MAPI-6k": "same nonexistent dataset, different capitalisation.",
+    "novel dataset of 6,000 inter-agent": (
+        "the corpus behind this claim does not exist. Withdrawn; do not restate the size."
+    ),
+    # The containment figure, in the form published as a result. The paper's own repository
+    # measured 66.3% decision accuracy and retracted the hundred-percent claim, so publishing
+    # it again is publishing a number its author already knows is wrong.
+    "100% containment": (
+        "retracted. The repository measures 66.3% decision accuracy and the best arm still "
+        "approved 6 of 208 hard-denial actions."
+    ),
+    # Deliberately NOT forbidding the hundred-percent *adherence* phrase: the firewall
+    # repository's README quotes it in order to retract it, which is what a correction should
+    # look like. The rules above are limited to strings with no legitimate use -- a dataset that
+    # does not exist, and a figure the author has already withdrawn. A rule that also banned the
+    # retraction would force the README to stop saying what it got wrong.
     "5-byte header": (
         "the issue (#677) says the malformed input is 117 bytes; nothing in "
         "s2geometry mentions five bytes. Use '117-byte input'."
