@@ -78,6 +78,15 @@ SURFACES = [
     "reputation/*.pdf",
     "job-kit/*.pdf",
     "portfolio/src/app/page.tsx",
+    # The per-paper disclosure notes. These are the site's own corrections -- the place
+    # it explains that an abstract carries the wrong denominator, that a label means
+    # something narrower than it looks, or that a paper is accepted rather than
+    # published. That makes them a claims surface twice over: they assert what the
+    # status *is*, and they are the only place a reader can learn the difference. The
+    # PREBAS "in IEEE Xplore" overstatement on the homepage survived a fact-check
+    # because the venue claim was true while the paper claim was not, so the page that
+    # states the distinction is now scanned rather than trusted.
+    "portfolio/src/app/publications/*/page.tsx",
     # The publications *content*, not only the page that renders it. This file was the one
     # surface no rule reached, and it is where a live, indexed claim went unchecked: it
     # published a manuscript naming a benchmark corpus that was never built, beside an earlier
@@ -249,6 +258,21 @@ FORBIDDEN = {
     "[month year]": (
         "an unfilled placeholder on a public page; it now reads 'from graduation'."
     ),
+    # The homepage stat read "Papers accepted, one in IEEE Xplore". The venue's research
+    # track is published in IEEE Xplore, but that is a fact about the track, not about
+    # this paper -- which is accepted, is in neither IEEE Xplore nor Crossref, and whose
+    # inclusion in the proceedings depended on an author registration that was never
+    # completed. The sentence was true of the venue and false of the paper, which is how
+    # it survived a fact-check that was reading for the venue claim. Phrase pinned
+    # narrowly ("one in IEEE Xplore") so the accurate standfirst -- "whose research track
+    # is published in IEEE Xplore" -- does not trip it.
+    "one in IEEE Xplore": (
+        "the paper is accepted, not published, and has no Xplore or Crossref record. "
+        "Say 'accepted', or name the conference, not the database."
+    ),
+    "one of which is in IEEE Xplore": (
+        "same conflation of the track's venue with this paper's status."
+    ),
 }
 
 # The corrected wording, asserted on the surfaces that make the claim. A page that
@@ -262,6 +286,10 @@ FORBIDDEN = {
 # each rule names the file and the exact string that file should carry.
 REQUIRED: list[tuple[str, str, str]] = [
     # (file, phrase that must appear, what it protects)
+    ("portfolio/src/app/page.tsx", "one at an IEEE conference",
+     "the PREBAS status stays 'accepted at an IEEE conference', not 'in IEEE Xplore'"),
+    ("portfolio/src/app/publications/[slug]/page.tsx", "neither IEEE Xplore nor Crossref",
+     "the paper page keeps stating that it is not published yet, with the date checked"),
     ("beyond-attention/README.md", "0.420",
      "the unflattering raw-gate number survives an edit"),
     # This pinned "does not reproduce across Python versions" until
