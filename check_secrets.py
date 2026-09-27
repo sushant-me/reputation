@@ -253,6 +253,17 @@ def _headers() -> dict[str, str]:
     return h
 
 
+# Requests that failed for a reason other than "this path is not an inline
+# blob". A run that could not read part of the estate is not evidence about that
+# part, and this list is what stops a half-read run from reporting a clean one:
+# `read_file` returning None used to be the same value for "the API declined to
+# return this inline" and "the API refused the request", and the coverage floor
+# is 25 files against the ~1100 a complete scan reads, so a run that lost its
+# rate limit halfway still printed "no credential-shaped values found" and
+# exited 0 over everything it never opened.
+READ_FAILURES: list[str] = []
+
+
 def api_get(url: str) -> object | None:
     req = urllib.request.Request(url, headers=_headers())
     try:
@@ -261,16 +272,41 @@ def api_get(url: str) -> object | None:
     except urllib.error.HTTPError as e:
         if e.code in (403, 429):
             print(f"  ! rate limited or forbidden: {url}", file=sys.stderr)
+        READ_FAILURES.append(f"HTTP {e.code} {url}")
         return None
-    except Exception:
+    except Exception as e:
+        READ_FAILURES.append(f"{type(e).__name__} {url}")
         return None
 
 
 def owned_repos() -> list[dict]:
+    """The account's owned, non-fork repositories, from the public listing.
+
+    This asked `/user/repos?affiliation=owner`, which needs a token that can see
+    the whole account. In CI the token is `GITHUB_TOKEN`, scoped to the
+    repository the workflow runs in, so that endpoint answered 403, nothing was
+    enumerated, and the run failed on the coverage floor rather than reporting a
+    clean account. The documented remedy was a fine-grained PAT in a
+    `REPUTATION_TOKEN` secret.
+
+    `/users/{OWNER}/repos` is public data, so any token can read it, including
+    the repo-scoped one: the scan needs no secret at all, and it never did once
+    the endpoint is the right one. It returns what the account has published,
+    which is the scope every message in this file already claims ("no
+    credential-shaped values found in public repositories"). Private
+    repositories are therefore not covered -- and are not silently assumed
+    clean either: the run prints how many repositories it opened, the coverage
+    floor refuses a scan that read too little, and `MAX_FILE_FETCHES` refuses a
+    truncated one.
+
+    A `REPUTATION_TOKEN` secret is still honoured by the workflow if present, but
+    only for rate-limit headroom: it cannot widen this endpoint's coverage.
+    """
     repos: list[dict] = []
     page = 1
     while page <= 5:
-        batch = api_get(f"{API}/user/repos?per_page=100&affiliation=owner&page={page}")
+        batch = api_get(
+            f"{API}/users/{OWNER}/repos?per_page=100&type=owner&page={page}")
         if not isinstance(batch, list) or not batch:
             break
         repos.extend(batch)
@@ -329,6 +365,23 @@ ALLOWLIST: list[tuple[str, str, str]] = [
         "GitHub's own Skills exercise file. The values are the course's published "
         "dummies, committed by following the tutorial, and are the artefact the "
         "exercise asks you to detect.",
+    ),
+    (
+        "skills-introduction-to-secret-scanning",
+        ".github/steps/",
+        "The same Skills exercise, in the step instructions rather than the file "
+        "the step tells you to create. It quotes the published AWS dummy key the "
+        "exercise is built around; the account did not commit a key it owns.",
+    ),
+    (
+        "reputation",
+        "check_secrets.py",
+        "This scanner's own source, which has to contain credential-shaped "
+        "strings to have a self-test at all: LEAK_FIXTURE is the shape of the "
+        "original leak, and the rule patterns are regexes over these variable "
+        "names. The values are non-functional and the fixture is never used as a "
+        "key. It matched itself on the first run the corrected endpoint allowed; "
+        "a check that fires on its own source is a check people learn to ignore.",
     ),
 ]
 
@@ -415,20 +468,23 @@ def main() -> int:
     if not repos:
         print("::error::no repositories enumerated; the scan could not run")
         print()
-        print("  In CI this almost always means the token cannot see the account.")
-        print("  The workflow's own GITHUB_TOKEN is scoped to this repository alone,")
-        print("  so it cannot enumerate the rest - and the one real finding lived in")
-        print("  a different repository.")
+        print("  The listing is public data, so this is not a permissions problem")
+        print("  any more: the endpoint answers without repo access. An empty or")
+        print("  failed answer therefore means the API call itself was refused -")
+        print("  rate limited, or GH_TOKEN rejected.")
         print()
-        print("  Fix: add a fine-grained PAT with read access to the account's public")
-        print("  repositories as the repository secret REPUTATION_TOKEN.")
-        print("  See .github/workflows/secrets.yml.")
+        print("  Check the line above: a 403 or 429 from api_get is printed as")
+        print("  '! rate limited or forbidden'. If it is a rate limit, a PAT with")
+        print("  any read scope raises the ceiling; GITHUB_TOKEN also works, it is")
+        print("  just capped lower. See .github/workflows/secrets.yml.")
         print()
         print("  A pass here would have meant 'I read nothing and found nothing',")
         print("  which is why this exits non-zero instead.")
         return 1
 
-    print(f"scanning {len(repos)} owned repositories (archived included)\n")
+    print(f"scanning {len(repos)} owned public repositories (archived included)")
+    print("private repositories are out of scope for this listing and are not")
+    print("assumed clean; the file count below is what the run actually read\n")
     findings: list[Finding] = []
     read_count = 0
     skipped: list[str] = []
@@ -459,6 +515,8 @@ def main() -> int:
     print()
     print(f"files read        : {read_count}")
     print(f"repositories read : {len({f.repo for f in findings}) if findings else 'n/a'}")
+    if READ_FAILURES:
+        print(f"requests failed   : {len(READ_FAILURES)}")
     if skipped:
         print(f"truncated         : {len(skipped)} repo(s)")
         for s in skipped:
@@ -478,6 +536,23 @@ def main() -> int:
             print()
         print("A finding is a prompt to rotate, not just to delete: the blob is already")
         print("public, and removing the file does not un-publish the value.")
+        return 1
+
+    # A request that failed is a hole in the estate, and it is the one hole this
+    # script cannot see from the inside: a 403 part-way through a scan looks
+    # exactly like a repository with nothing in it. Reported after the findings
+    # so that a run which both found things and lost requests still prints what
+    # it found.
+    if READ_FAILURES:
+        print(f"::error::{len(READ_FAILURES)} API request(s) failed, so part of the")
+        print("         estate was never read. A partial read is not evidence of a")
+        print("         clean account. First few:")
+        for failure in READ_FAILURES[:5]:
+            print(f"           - {failure}")
+        print("         An HTTP 403 or 429 is a rate limit: this token is capped")
+        print("         lower than the ~1100 requests a complete scan needs. Raise")
+        print("         the budget (a PAT in REPUTATION_TOKEN) or make the scan")
+        print("         cheaper; do not read this as green.")
         return 1
 
     if read_count < MIN_FILES_READ:
