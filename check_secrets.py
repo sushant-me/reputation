@@ -264,6 +264,12 @@ def _headers() -> dict[str, str]:
 # exited 0 over everything it never opened.
 READ_FAILURES: list[str] = []
 
+# Set when GitHub says the hourly budget is gone rather than that this one path
+# is refused. 93 failures in one CI run all had this cause, and the log listed
+# them one URL at a time: the reader had to infer a rate limit from a wall of
+# 403s. It is one fact and it is reported as one.
+RATE_LIMITED = False
+
 # Repositories the API says hold no commits. Nothing to scan is not the same as
 # could not read, but it is still reported so it does not pass unnoticed.
 EMPTY_PATHS: list[str] = []
@@ -303,9 +309,16 @@ def api_get(url: str, retry: bool = True) -> object | None:
         if retry:
             time.sleep(3)
             return api_get(url, retry=False)
-        if e.code in (403, 429):
-            print(f"  ! rate limited or forbidden: {url}", file=sys.stderr)
-        READ_FAILURES.append(f"HTTP {e.code} {url}")
+        global RATE_LIMITED
+        remaining = (e.headers or {}).get("X-RateLimit-Remaining") \
+            if hasattr(e, "headers") else None
+        if e.code == 429 or remaining == "0":
+            RATE_LIMITED = True
+            READ_FAILURES.append(f"HTTP {e.code} (hourly budget exhausted) {url}")
+        else:
+            if e.code in (403, 429):
+                print(f"  ! forbidden: {url}", file=sys.stderr)
+            READ_FAILURES.append(f"HTTP {e.code} {url}")
         return None
     except Exception as e:
         if retry:
@@ -518,6 +531,18 @@ def main() -> int:
         print("  which is why this exits non-zero instead.")
         return 1
 
+    # /rate_limit is free: it does not count against the budget it reports. Knowing
+    # it before the scan starts turns "the run went red somewhere in the middle"
+    # into a number, and the number is the whole story - a complete scan wants
+    # roughly one request per candidate file plus one per repository, the CI token
+    # is capped at 1,000 requests/hour per repository, and the cap is shared by
+    # every run of this repository in that hour.
+    budget = api_get(f"{API}/rate_limit")
+    if isinstance(budget, dict):
+        core = (budget.get("resources") or {}).get("core") or {}
+        if core:
+            print(f"api budget        : {core.get('remaining')} of "
+                  f"{core.get('limit')} core requests left this hour")
     print(f"scanning {len(repos)} owned public repositories (archived included)")
     print("private repositories are out of scope for this listing and are not")
     print("assumed clean; the file count below is what the run actually read\n")
@@ -553,6 +578,8 @@ def main() -> int:
     print(f"repositories read : {len({f.repo for f in findings}) if findings else 'n/a'}")
     if EMPTY_PATHS:
         print(f"empty repositories: {len(EMPTY_PATHS)} (no commits; nothing to scan)")
+    if RATE_LIMITED:
+        print("rate limited      : yes - the hourly API budget ran out mid-scan")
     if READ_FAILURES:
         print(f"requests failed   : {len(READ_FAILURES)}")
         for failure in READ_FAILURES[:5]:
@@ -583,6 +610,17 @@ def main() -> int:
     # exactly like a repository with nothing in it. Reported after the findings
     # so that a run which both found things and lost requests still prints what
     # it found.
+    if RATE_LIMITED:
+        print(f"::error::the API budget ran out mid-scan, so {len(READ_FAILURES)}")
+        print("         request(s) never happened and the estate was not read. This")
+        print("         is a budget problem, not a permissions one: a complete scan")
+        print("         wants roughly one request per candidate file plus one per")
+        print("         repository, and this token is capped at 1,000 requests/hour")
+        print("         per repository, shared by every run of this repository in")
+        print("         that hour. A PAT in REPUTATION_TOKEN raises the ceiling;")
+        print("         failing that the scan has to need fewer requests.")
+        return 1
+
     if READ_FAILURES:
         print(f"::error::{len(READ_FAILURES)} API request(s) failed, so part of the")
         print("         estate was never read. A partial read is not evidence of a")
