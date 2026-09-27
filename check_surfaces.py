@@ -419,7 +419,7 @@ def check_live_sites(truth: dict[str, int]) -> tuple[list[str], int]:
                 continue
             for found in pattern.findall(text):
                 checked += 1
-                if int(found) != truth[key]:
+                if as_int(found) != truth[key]:
                     problems.append(
                         f"{label} ({url}) says {found} for the {what}, but the corpus has "
                         f"{truth[key]}: the deployment is behind the repository")
@@ -435,6 +435,31 @@ def normalise(text: str) -> str:
     documents that contained them. Matching happens on normalised text now.
     """
     return " ".join(text.split())
+
+
+def committed_generation_count() -> int | None:
+    """Raw model generations actually committed in the study repository, counted not remembered.
+
+    Two deployed pages stated "all 1,800 raw model generations". 1,800 is the paper's
+    three-condition comparison; the committed results also hold the cot_av arm (600) and a
+    200-per-condition replication (600), so the repository carries 3,000. The pages
+    undercounted what a reader can actually check, and nothing was watching the number
+    because it lived on a deployed page rather than in evidence.json.
+
+    Counting the lines of results/*.jsonl makes the number follow the repository instead of
+    the reverse. Returns None when the study is not in this checkout.
+    """
+    directory = WORKSPACE / "Edge-Native_Semantic_Firewall_" / "results"
+    if not directory.is_dir():
+        return None
+    total = 0
+    for path in sorted(directory.glob("*.jsonl")):
+        try:
+            with path.open(encoding="utf-8", errors="replace") as handle:
+                total += sum(1 for line in handle if line.strip())
+        except OSError:
+            return None
+    return total or None
 
 
 def corpus_case_count() -> int | None:
@@ -623,6 +648,9 @@ def evidence_counts() -> dict[str, int]:
     corpus = corpus_case_count()
     if corpus is not None:
         counts["corpus_cases"] = corpus
+    generations = committed_generation_count()
+    if generations is not None:
+        counts["raw_generations"] = generations
     return counts
 
 
@@ -644,7 +672,18 @@ COUNT_RULES = [
     (re.compile(r"\b(\d+)\s+agent tool-boundary cases\b"), "corpus_cases",
      "corpus case count"),
     (re.compile(r"\b(\d+)\s+self-authored cases\b"), "corpus_cases", "corpus case count"),
+    # Thousands are written with a comma on the deployed pages, so the token is captured
+    # with it and normalised by as_int() rather than by int().
+    (re.compile(r"\b(\d[\d,]*)\s+raw model generations\b"), "raw_generations",
+     "raw model generation count"),
+    (re.compile(r"\b(\d[\d,]*)\s+raw model outputs\b"), "raw_generations",
+     "raw model generation count"),
 ]
+
+
+def as_int(token: str) -> int:
+    """A captured count, comma or no comma. Prose writes 3,000; int() refuses that."""
+    return int(token.replace(",", ""))
 
 
 def latest_release(repo: str) -> str | None:
@@ -826,7 +865,7 @@ def main(argv: list[str] | None = None) -> int:
                         counts_skipped.append(what)
                     continue
                 counts_checked += 1
-                if int(found) != truth[key]:
+                if as_int(found) != truth[key]:
                     problems.append(
                         f"{path.relative_to(WORKSPACE)}: says {found} for the {what}, "
                         f"but the corpus has {truth[key]}")
