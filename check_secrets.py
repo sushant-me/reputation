@@ -264,28 +264,41 @@ def _headers() -> dict[str, str]:
 # exited 0 over everything it never opened.
 READ_FAILURES: list[str] = []
 
+# Repositories the API says hold no commits. Nothing to scan is not the same as
+# could not read, but it is still reported so it does not pass unnoticed.
+EMPTY_PATHS: list[str] = []
+
 
 def api_get(url: str, retry: bool = True) -> object | None:
     """One API read. Records anything that stopped it from happening.
 
-    A 404 is not a failure: it means the path is not there under this ref -- a
-    submodule, a symlink, or a file that moved between the tree listing and this
-    read -- and there is nothing at it to scan. Everything else is a hole, and a
-    hole is recorded so the run cannot report a clean account over it.
+    Two codes mean "there is nothing at this path to scan" rather than "this
+    could not be read", and neither is a hole:
+
+    * **404** -- the path is not there under this ref: a submodule, a symlink, or
+      a file that moved between the tree listing and this read.
+    * **409** -- GitHub's answer for an empty repository, which is what the four
+      it returned on the first run with this check turned out to be: 0 KB, no
+      commits, nothing to leak. Counting those as unreadable made the scan go red
+      over four repositories that hold no files. They are listed separately in
+      the summary so "nothing there" still shows up rather than vanishing.
+
+    Everything else is a hole, and a hole is recorded so the run cannot report a
+    clean account over it.
 
     One retry, because GitHub answers 403 both for a permission refusal and for a
-    rate limit, and the first CI run with this check lost four of ~1170 requests
-    to what were almost certainly transient refusals. A scan that goes red on
-    four flakes is a scan whose red stops meaning anything, which is the failure
-    this file exists to avoid. The retry is once: a real rate limit is still
-    recorded and still fails the run.
+    rate limit, and a scan that goes red on a flake is a scan whose red stops
+    meaning anything. The retry is once: a real rate limit is still recorded and
+    still fails the run.
     """
     req = urllib.request.Request(url, headers=_headers())
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
             return json.loads(r.read().decode("utf-8", "replace"))
     except urllib.error.HTTPError as e:
-        if e.code == 404:
+        if e.code in (404, 409):
+            if e.code == 409:
+                EMPTY_PATHS.append(url)
             return None
         if retry:
             time.sleep(3)
@@ -538,6 +551,8 @@ def main() -> int:
     print()
     print(f"files read        : {read_count}")
     print(f"repositories read : {len({f.repo for f in findings}) if findings else 'n/a'}")
+    if EMPTY_PATHS:
+        print(f"empty repositories: {len(EMPTY_PATHS)} (no commits; nothing to scan)")
     if READ_FAILURES:
         print(f"requests failed   : {len(READ_FAILURES)}")
         for failure in READ_FAILURES[:5]:
