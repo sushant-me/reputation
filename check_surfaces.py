@@ -150,6 +150,20 @@ FORBIDDEN = {
         "the name must not reappear on any surface."
     ),
     "MAPI-6k": "same nonexistent dataset, different capitalisation.",
+    # The site claimed its own checkability more broadly than the ledger supported. "Every factual
+    # claim about my own work is re-checked weekly" stood on the press page, the writing template,
+    # the publication template and the homepage, while the ledger held 23 claims covering 2 of the
+    # 9 papers -- and 7 of 8 publication pages had no entry at all. A claim of verification that
+    # nothing verifies is the same defect this repository exists to catch, pointed at itself.
+    "every claim on this page is re-checked": (
+        "the ledger does not cover every claim on that page. State the coverage instead."
+    ),
+    "Every factual claim I make": (
+        "same overstatement on the writing template; state the ledger's coverage."
+    ),
+    "Every factual claim Sushant makes about his own work is re-checked": (
+        "same overstatement on the publication template; state the ledger's coverage."
+    ),
     "novel dataset of 6,000 inter-agent": (
         "the corpus behind this claim does not exist. Withdrawn; do not restate the size."
     ),
@@ -316,7 +330,13 @@ REQUIRED: list[tuple[str, str, str]] = [
     ("job-kit/PROPOSAL.html", "does not analyse locally",
      "the third-party scanner limitation"),
     ("hire/index.html", "Nothing leaves your machine",
-     "the local-analysis property"),
+     "the local-analysis property"),    # The correction to "every claim is re-checked" must survive as a statement, not as a
+    # deletion: the three FORBIDDEN rules above stop the overstatement returning, and this
+    # holds the replacement in place. Removing the sentence instead of fixing it is the other
+    # way this defect comes back.
+    ("portfolio/src/app/press/page.tsx", "holds 23 claims",
+     "the ledger's actual coverage is stated rather than implied"),
+
 ]
 
 
