@@ -447,6 +447,29 @@ def normalise(text: str) -> str:
     return " ".join(text.split())
 
 
+def committed_condition_count() -> int | None:
+    """Experimental conditions in the study, counted from metrics.json rather than remembered.
+
+    The study's own checker printed "(5 conditions)" because it counted every top-level key in
+    results/metrics.json, and that includes `_replication` - a block of bookkeeping about the
+    run, not a fifth way of asking the model. The design has four: naive, zeroshot, cot and
+    cot_av, plus a 200-scenario replication of three of them. The same "5 conditions" then
+    appeared in evidence.json, which is where this repository's prose counts come from.
+
+    Underscore-prefixed keys are excluded, so the number follows the study if a condition is
+    ever added or removed. Returns None when the study is not in this checkout.
+    """
+    metrics = WORKSPACE / "Edge-Native_Semantic_Firewall_" / "results" / "metrics.json"
+    if not metrics.is_file():
+        return None
+    try:
+        blocks = json.loads(metrics.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    conditions = [key for key in blocks if not key.startswith("_")]
+    return len(conditions) or None
+
+
 def committed_generation_count() -> int | None:
     """Raw model generations actually committed in the study repository, counted not remembered.
 
@@ -661,6 +684,9 @@ def evidence_counts() -> dict[str, int]:
     generations = committed_generation_count()
     if generations is not None:
         counts["raw_generations"] = generations
+    conditions = committed_condition_count()
+    if conditions is not None:
+        counts["conditions"] = conditions
     return counts
 
 
@@ -688,7 +714,20 @@ COUNT_RULES = [
      "raw model generation count"),
     (re.compile(r"\b(\d[\d,]*)\s+raw model outputs\b"), "raw_generations",
      "raw model generation count"),
+    (re.compile(r"\b(\d+)\s+conditions\b"), "conditions", "condition count"),
 ]
+
+
+def strip_fenced(text: str) -> str:
+    """Prose with fenced code blocks removed, for the count rules only.
+
+    A count inside a ``` block is usually a transcript of what a command printed, not a claim
+    about the design - and a transcript has to stay verbatim or it stops being evidence. When the
+    study's checker was found to be mislabelling a replication block as a condition, the writeup
+    that had pasted its output kept the wrong line on purpose and carried a correction beneath it;
+    the rule then failed on the preserved quote. Transcripts are excluded, prose is not.
+    """
+    return re.sub(r"^\s*```.*?^\s*```", " ", text, flags=re.S | re.M)
 
 
 def as_int(token: str) -> int:
@@ -866,7 +905,7 @@ def main(argv: list[str] | None = None) -> int:
         if not text:
             continue
         for pattern, key, what in COUNT_RULES:
-            for found in pattern.findall(text):
+            for found in pattern.findall(strip_fenced(text)):
                 if key not in truth:
                     # The corpus is not in this checkout, so its count cannot be re-derived.
                     # Recorded rather than passed silently: a count nobody could check must
