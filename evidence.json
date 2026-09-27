@@ -39,7 +39,7 @@
       "id": "go-github-merged",
       "category": "open-source",
       "claim": "Security fix authored, merged, then generalised into google/go-github, with the credit since recorded in the project's AUTHORS file",
-      "detail": "I authored #4556, which was merged by maintainer gmlewis on 2026-09-17: an upload whose URL pointed at a different host than the configured upload host was refused rather than sent with the client's credentials. He reverted it the next day in favour of his broader #4564, which now enforces the general rule in master ('credentials are sent only to configured origins', via AllowedOrigins in github/github.go) and which carries the commit 'Address feedback from sushant-me'.\n\nThe Co-authored-by trailer never appeared. On 2026-09-20 the maintainer offered a different mechanism that fits the repository's squash-merge policy: the contributor opens a PR adding themselves to AUTHORS and records the work in its description. I opened google/go-github#4579, and he merged it the same day (2026-09-20T17:11:32Z, merge commit 5493527). 'Sushant Poudel <sushant.poudel2028@gmail.com>' is in AUTHORS on master.\n\nThis check now asserts the positive - that the entry is present - as well as the original facts. It asserted only the negative until the credit landed, and would have gone on reporting 'not yet credited' about a claim that had become an understatement.",
+      "detail": "I authored #4556, which was merged by maintainer gmlewis on 2026-09-17: an upload whose URL pointed at a different host than the configured upload host was refused rather than sent with the client's credentials. He reverted it the next day in favour of his broader #4564, which now enforces the general rule in master ('credentials are sent only to configured origins', via AllowedOrigins in github/github.go) and which carries the commit 'Address feedback from sushant-me'.\n\nThe Co-authored-by trailer never appeared. On 2026-09-20 the maintainer offered a different mechanism that fits the repository's squash-merge policy: the contributor opens a PR adding themselves to AUTHORS and records the work in its description. I opened google/go-github#4579, and he merged it the same day (2026-09-20T17:11:32Z, merge commit 5493527). 'Sushant Poudel <sushant.poudel2028@gmail.com>' is in AUTHORS on master.\n\nThe check asserted only the negative until the credit landed: it failed if a Co-authored-by trailer appeared, which was the right instinct for a claim of something still owed. The credit instead arrived through the AUTHORS-file route the maintainer offered, which the original check never looked at, so it kept passing while the claim underneath it had become an understatement. It now reads AUTHORS on master and asserts the entry is present.",
       "source": {
         "kind": "github_pr",
         "url": "https://github.com/google/go-github/pull/4556",
@@ -65,12 +65,12 @@
         }
       ],
       "verification": {
-        "method": "github_pr_superseded_no_credit"
+        "method": "github_pr_superseded_credit_in_authors"
       },
       "metrics": [
         "merged 2026-09-17, superseded 2026-09-18",
         "replacement in master",
-        "co-author credit promised, not yet landed"
+        "credit landed 2026-09-20, Sushant Poudel in AUTHORS (PR #4579)"
       ],
       "authors_pr": {
         "repo": "google/go-github",

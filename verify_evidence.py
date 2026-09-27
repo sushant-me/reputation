@@ -105,8 +105,8 @@ def check_github_pr_merged(claim: dict) -> tuple[str, str]:
     return PASS, f"merged {str(pr.get('merged_at'))[:10]} by {who}"
 
 
-def check_github_pr_superseded_no_credit(claim: dict) -> tuple[str, str]:
-    """The go-github claim, which has four separate facts and one of them is negative.
+def check_github_pr_superseded_credit_in_authors(claim: dict) -> tuple[str, str]:
+    """The go-github claim: four public facts, and one that changed while nobody was looking.
 
     My PR was merged, then reverted the next day by the maintainer's broader
     replacement. Every part of that is public, and a claim that says only
@@ -116,12 +116,16 @@ def check_github_pr_superseded_no_credit(claim: dict) -> tuple[str, str]:
       1. #4556 is merged and authored by me;
       2. #4564 is merged, and master implements the replacement (`AllowedOrigins`);
       3. the maintainer's co-author promise is public, at the source;
-      4. the promised credit has NOT landed.
+      4. the promised credit has landed — in the AUTHORS file, via the mechanism
+         the maintainer offered after the trailer route fell through.
 
-    (4) is a negative fact, which is exactly why it is checked rather than
-    asserted: the moment the trailer appears, this claim becomes the wrong claim
-    and the verifier has to go red so it gets rewritten. A claim that something
-    is still owed is the kind that rots silently.
+    (4) used to be the opposite fact, and this function was named for it. It
+    asserted that the credit had *not* landed, on the reasoning that a claim of
+    something still owed is the kind that rots silently. That reasoning was right
+    and the assertion still expired: the credit arrived on 2026-09-20 through a
+    route the original check never looked at, so it went on passing while the
+    claim underneath it had become an understatement. The file is now read
+    directly, and the entry is asserted rather than its absence.
     """
     source = claim["source"]
     repo = source["repo"]
@@ -451,7 +455,7 @@ def check_named_person_said(claim: dict) -> tuple[str, str]:
 CHECKS = {
     "hackinghub_rank": check_hackinghub_rank,
     "github_pr_merged": check_github_pr_merged,
-    "github_pr_superseded_no_credit": check_github_pr_superseded_no_credit,
+    "github_pr_superseded_credit_in_authors": check_github_pr_superseded_credit_in_authors,
     "github_pr_open_or_merged": check_github_pr_open_or_merged,
     "github_prs_open_or_merged": check_github_prs_open_or_merged,
     "github_issues_open": check_github_issues_open,
