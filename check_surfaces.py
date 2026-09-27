@@ -364,6 +364,16 @@ LIVE_SITES = [
     ("https://sushant-me.github.io/hire/", "the hire page",
      ["117-byte input", "generalised into", "from graduation", "GHSA-qwvv-fcmm-r3j2", "Bhaktapur"],
      ["month year"]),
+    # The author's own write-up of the evaluation, and the page an editor or a reader lands on
+    # first. These five figures are the public claim itself - each was checked against the
+    # study's committed metrics.json before being asserted here - so a rewrite or a redeploy
+    # that changes one of them is exactly the drift this file exists to catch, on the surface
+    # where it matters most. The raw table cells (103 / 277 / 141) are deliberately NOT
+    # asserted: they are layout, and a reformat would fail the check with nothing actually wrong.
+    ("https://sushantpoudel2028.com.np/writing/structured-output-made-it-less-safe",
+     "the evaluation write-up",
+     ["46.2%", "17.2%", "23.5%", "66.3%", "6 of 208"],
+     []),
 ]
 
 
