@@ -66,6 +66,7 @@ import math
 import os
 import re
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -264,17 +265,39 @@ def _headers() -> dict[str, str]:
 READ_FAILURES: list[str] = []
 
 
-def api_get(url: str) -> object | None:
+def api_get(url: str, retry: bool = True) -> object | None:
+    """One API read. Records anything that stopped it from happening.
+
+    A 404 is not a failure: it means the path is not there under this ref -- a
+    submodule, a symlink, or a file that moved between the tree listing and this
+    read -- and there is nothing at it to scan. Everything else is a hole, and a
+    hole is recorded so the run cannot report a clean account over it.
+
+    One retry, because GitHub answers 403 both for a permission refusal and for a
+    rate limit, and the first CI run with this check lost four of ~1170 requests
+    to what were almost certainly transient refusals. A scan that goes red on
+    four flakes is a scan whose red stops meaning anything, which is the failure
+    this file exists to avoid. The retry is once: a real rate limit is still
+    recorded and still fails the run.
+    """
     req = urllib.request.Request(url, headers=_headers())
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
             return json.loads(r.read().decode("utf-8", "replace"))
     except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return None
+        if retry:
+            time.sleep(3)
+            return api_get(url, retry=False)
         if e.code in (403, 429):
             print(f"  ! rate limited or forbidden: {url}", file=sys.stderr)
         READ_FAILURES.append(f"HTTP {e.code} {url}")
         return None
     except Exception as e:
+        if retry:
+            time.sleep(3)
+            return api_get(url, retry=False)
         READ_FAILURES.append(f"{type(e).__name__} {url}")
         return None
 
@@ -517,6 +540,8 @@ def main() -> int:
     print(f"repositories read : {len({f.repo for f in findings}) if findings else 'n/a'}")
     if READ_FAILURES:
         print(f"requests failed   : {len(READ_FAILURES)}")
+        for failure in READ_FAILURES[:5]:
+            print(f"    - {failure}")
     if skipped:
         print(f"truncated         : {len(skipped)} repo(s)")
         for s in skipped:
