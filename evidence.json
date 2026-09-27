@@ -234,7 +234,7 @@
       "id": "oss-fuzz-harness",
       "category": "security-research",
       "claim": "An OSS-Fuzz harness that was testing nothing, fixed",
-      "detail": "google/libphonenumber's as-you-type-formatter fuzz target asserted 0.00% line coverage of the code it was meant to exercise because it never generated a valid region or digit; the corrected harness reaches 93%.",
+      "detail": "google/libphonenumber's as-you-type-formatter fuzz target sat at 0.00% (0/532) lines and 0.00% (0/29) functions in the published OSS-Fuzz coverage report, because it never generated a valid ISO-3166 region or a digit, so the formatter loaded empty metadata and set able_to_format_ false. The corrected harness (PR #4079) was measured on a clang 22 source-based-coverage rebuild over 20,000 executions from an empty corpus: 23.50% (125/532) lines and 31.03% (9/29) functions before, 93.05% (495/532) and 93.10% (27/29) after, with no sanitizer report in either run. The published 0.00% and the locally measured 23.50% are two different measurements of the same file, not one number, and they are stated separately here rather than conflated.",
       "source": {
         "kind": "github_pr",
         "repo": "google/libphonenumber",
@@ -244,7 +244,9 @@
         "method": "github_pr_open_or_merged"
       },
       "metrics": [
-        "0.00% -> 93% line coverage"
+        "OSS-Fuzz report, PR #4079 body: 0.00% (0/532) lines, 0.00% (0/29) functions",
+        "local clang 22 rebuild: 23.50% (125/532) -> 93.05% (495/532) lines",
+        "local clang 22 rebuild: 31.03% (9/29) -> 93.10% (27/29) functions"
       ]
     },
     {
