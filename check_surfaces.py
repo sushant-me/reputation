@@ -453,6 +453,76 @@ def corpus_case_count() -> int | None:
     return len(list(directory.glob("*.json")))
 
 
+# Test counts stated in `evidence.json`, derived from the suites themselves.
+#
+# `check_surfaces` compares counts written in PROSE against `evidence.json`, which makes that
+# file the source of truth -- and it was the one surface no rule derived. Three of its counts
+# had gone stale (policygate said 58 against 60 collected, mcpaudit said 71 against 89, the
+# corpus said "23 tests" where 23 is the number of CASES and the suite collects 58) while every
+# project README already stated the correct figure. A number nothing re-derives is the exact
+# failure this repository exists to catch, so it is re-derived here from what pytest reports.
+#
+# `def test_` counts are deliberately NOT used: they overcount (70 and 90 on these same two
+# repositories) and they are the static count the README already documents as the trap.
+TEST_COUNT_SUITES = {
+    "tool-policygate": "policygate",
+    "tool-mcpaudit": "mcpaudit",
+    "tool-boundary-corpus": "tool-boundary-corpus",
+}
+
+
+def collected_test_count(repo: str) -> int | None:
+    """What pytest actually collects in a sibling repository, or None if it is not here."""
+    root = WORKSPACE / repo
+    python = root / ".venv" / "bin" / "python"
+    if not root.is_dir() or not python.exists():
+        return None
+    try:
+        out = subprocess.run(
+            [str(python), "-m", "pytest", "--collect-only", "-q"],
+            cwd=root, capture_output=True, text=True, timeout=300, check=False,
+        ).stdout
+    except (OSError, subprocess.SubprocessError):
+        return None
+    found = re.search(r"(\d+)\s+tests? collected", out)
+    return int(found.group(1)) if found else None
+
+
+def test_count_disagreements() -> tuple[list[str], int, list[str]]:
+    """Every test count stated in evidence.json, compared with the suite it describes.
+
+    Returns (problems, how many were checked, how many could not be). A suite that is not in
+    this checkout is reported rather than passed silently: a count nobody could check must not
+    look like a count that was checked.
+    """
+    claims = json.loads((HERE / "evidence.json").read_text(encoding="utf-8"))["claims"]
+    problems: list[str] = []
+    checked = 0
+    skipped: list[str] = []
+    for claim in claims:
+        repo = TEST_COUNT_SUITES.get(claim.get("id", ""))
+        if repo is None:
+            continue
+        stated = None
+        for metric in claim.get("metrics") or []:
+            found = re.match(r"\s*(\d+)\s+tests?\b", metric)
+            if found:
+                stated = int(found.group(1))
+                break
+        if stated is None:
+            continue
+        actual = collected_test_count(repo)
+        if actual is None:
+            skipped.append(f"evidence.json {claim['id']} (suite not in this checkout)")
+            continue
+        checked += 1
+        if stated != actual:
+            problems.append(
+                f"evidence.json: {claim['id']} states {stated} tests, but pytest "
+                f"collects {actual} in {repo}")
+    return problems, checked, skipped
+
+
 def html_text(path: pathlib.Path) -> str:
     """Visible text of an HTML document, for comparing against what it rendered to."""
     import html as _html
@@ -760,6 +830,15 @@ def main(argv: list[str] | None = None) -> int:
                     problems.append(
                         f"{path.relative_to(WORKSPACE)}: says {found} for the {what}, "
                         f"but the corpus has {truth[key]}")
+
+    # 3b. Test counts stated in evidence.json, re-derived from the suites. Section 3 makes
+    #     evidence.json the source of truth for every prose count; this is the rule that stops
+    #     evidence.json itself from drifting, which is how three of its counts went stale while
+    #     every README already had the right number.
+    tc_problems, tc_checked, tc_skipped = test_count_disagreements()
+    problems.extend(tc_problems)
+    counts_checked += tc_checked
+    counts_skipped.extend(tc_skipped)
 
     # 4. The deployed pages, which nothing else looks at - including any count on them.
     live_problems, live_checked = check_live_sites(truth)
