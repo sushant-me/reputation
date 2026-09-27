@@ -327,7 +327,7 @@
         "P/R measured for 2 detectors",
         "found a real false positive that was then fixed",
         "CI on 3.11-3.13",
-        "23 tests"
+        "58 tests"
       ]
     },
     {
@@ -343,7 +343,7 @@
         "method": "public_repo_exists"
       },
       "metrics": [
-        "71 tests",
+        "89 tests",
         "stdlib only",
         "CI on Python 3.11-3.13",
         "11 checks",
@@ -363,7 +363,7 @@
         "method": "public_repo_exists"
       },
       "metrics": [
-        "58 tests",
+        "60 tests",
         "stdlib only",
         "CI on Python 3.11-3.13",
         "MCP + LangChain + function-call adapters"
