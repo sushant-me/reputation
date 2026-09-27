@@ -383,7 +383,12 @@
         "expect": {
           "registered_rules": 10
         }
-      }
+      },
+      "metrics": [
+        "129 tests",
+        "CI on Python 3.9, 3.11 and 3.13",
+        "10 registered detectors"
+      ]
     },
     {
       "id": "tool-mcp-nameguard",
@@ -395,7 +400,11 @@
       },
       "verification": {
         "method": "public_repo_exists"
-      }
+      },
+      "metrics": [
+        "82 tests",
+        "CI on Python 3.9, 3.11 and 3.13"
+      ]
     },
     {
       "id": "tool-trajectorycheck",
@@ -408,7 +417,11 @@
       },
       "verification": {
         "method": "public_repo_exists"
-      }
+      },
+      "metrics": [
+        "36 tests",
+        "CI on Python 3.9, 3.11 and 3.13"
+      ]
     },
     {
       "id": "hult-prize",
