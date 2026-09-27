@@ -511,26 +511,6 @@ def main() -> int:
     if args.self_test:
         return self_test()
 
-    repos = owned_repos()
-    if args.repo:
-        repos = [r for r in repos if r["name"] in set(args.repo)]
-    if not repos:
-        print("::error::no repositories enumerated; the scan could not run")
-        print()
-        print("  The listing is public data, so this is not a permissions problem")
-        print("  any more: the endpoint answers without repo access. An empty or")
-        print("  failed answer therefore means the API call itself was refused -")
-        print("  rate limited, or GH_TOKEN rejected.")
-        print()
-        print("  Check the line above: a 403 or 429 from api_get is printed as")
-        print("  '! rate limited or forbidden'. If it is a rate limit, a PAT with")
-        print("  any read scope raises the ceiling; GITHUB_TOKEN also works, it is")
-        print("  just capped lower. See .github/workflows/secrets.yml.")
-        print()
-        print("  A pass here would have meant 'I read nothing and found nothing',")
-        print("  which is why this exits non-zero instead.")
-        return 1
-
     # /rate_limit is free: it does not count against the budget it reports. Knowing
     # it before the scan starts turns "the run went red somewhere in the middle"
     # into a number, and the number is the whole story - a complete scan wants
@@ -543,6 +523,27 @@ def main() -> int:
         if core:
             print(f"api budget        : {core.get('remaining')} of "
                   f"{core.get('limit')} core requests left this hour")
+    repos = owned_repos()
+    if args.repo:
+        repos = [r for r in repos if r["name"] in set(args.repo)]
+    if not repos:
+        print("::error::no repositories enumerated; the scan could not run")
+        print()
+        print("  The listing is public data, so this is not a permissions problem")
+        print("  any more: the endpoint answers without repo access. An empty or")
+        print("  failed answer therefore means the API call itself was refused -")
+        print("  rate limited, or GH_TOKEN rejected.")
+        print()
+        print("  The budget line above is the first thing to read. If it says 0 of")
+        print("  1000, this is the hourly limit and not a broken token: it is shared")
+        print("  by every run of this repository in the hour, and a scan of this")
+        print("  estate wants more requests than the limit allows. See")
+        print("  .github/workflows/secrets.yml.")
+        print()
+        print("  A pass here would have meant 'I read nothing and found nothing',")
+        print("  which is why this exits non-zero instead.")
+        return 1
+
     print(f"scanning {len(repos)} owned public repositories (archived included)")
     print("private repositories are out of scope for this listing and are not")
     print("assumed clean; the file count below is what the run actually read\n")
