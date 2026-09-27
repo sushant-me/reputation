@@ -254,7 +254,19 @@ REQUIRED: list[tuple[str, str, str]] = [
     ("job-kit/outbox.json", "23 agent tool-boundary cases", "the corpus count"),
     ("writeups/2026-09-21-a-benchmark-found-a-bug-in-my-own-detector.md",
      "declaration scanner) — 14 cases", "the tool-list subset count"),
-    ("tool-boundary-corpus/README.md", "54 tests", "the suite count"),
+    # This pinned the literal "54 tests". A pinned number is the right shape for a
+    # measurement that must not drift, and the wrong shape for one that is
+    # *supposed* to change: tool-boundary-corpus has a commit that corrects this
+    # README to 58 after a test file was added, and the rule would have fired on
+    # the correction the moment it was pushed - a guard blocking an update, which
+    # is the "errors which are not errors" failure this file warns about. Nothing
+    # here can count another repository's tests, so freezing the number only ever
+    # asserted "the README still says what it said". The sentence that carries the
+    # claim is pinned instead: it survives the number changing, and still fails if
+    # the claim is deleted.
+    ("tool-boundary-corpus/README.md",
+     "tests (the harness's own behaviour is tested with fake detectors)",
+     "the suite count is stated rather than deleted"),
     ("tool-boundary-corpus/README.md", "does not analyse locally",
      "the Snyk offline limitation"),
     ("tool-boundary-corpus/README.md", "adapters/mcp_scanner_adapter.py",
