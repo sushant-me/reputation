@@ -797,13 +797,20 @@ def check_pdf_sources(files: list[pathlib.Path]) -> list[str]:
         for token in PDF_FACT_TOKENS:
             if token in html and token not in text:
                 problems.append(
-                    f"{pdf.name} does not contain {token!r} although {source.name} does: the PDF "
-                    "was not regenerated after the HTML changed")
+                    f"{pdf.name} and {source.name} DISAGREE: {source.name} contains {token!r} "
+                    f"and {pdf.name} does not. One of the two is stale. This rule cannot tell "
+                    "which - both were assumed to be generated from the other, and either can be "
+                    "the one that was missed - so compare both against the document's own source "
+                    "before regenerating either.")
         stale = sorted(numbers(text) - numbers(html))
         if stale:
             problems.append(
-                f"{pdf.name} contains {stale}, which {source.name} no longer contains: the PDF "
-                "was not regenerated after the HTML changed")
+                f"{pdf.name} and {source.name} DISAGREE on these numbers: {stale} appear in "
+                f"{pdf.name} and not in {source.name}. One of the two is stale, and this rule "
+                "cannot tell which: it fired on a real CV where the HTML was the stale side, "
+                "because the markdown, DOCX and PDF had been rebuilt and the HTML had not. "
+                "Naming the wrong file sends the reader to fix the wrong one. Compare both "
+                "against the document's own source.")
     return problems
 
 
