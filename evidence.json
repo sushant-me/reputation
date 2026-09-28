@@ -385,7 +385,7 @@
         }
       },
       "metrics": [
-        "129 tests",
+        "140 tests",
         "CI on Python 3.9, 3.11 and 3.13",
         "10 registered detectors"
       ]

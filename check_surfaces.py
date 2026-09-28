@@ -570,10 +570,19 @@ def corpus_case_count() -> int | None:
 #
 # `def test_` counts are deliberately NOT used: they overcount (70 and 90 on these same two
 # repositories) and they are the static count the README already documents as the trap.
+# Every claim id that states a test count must appear here, or the count is recorded
+# and never checked. Three were missing until this was noticed: tool-agentbound,
+# tool-mcp-nameguard and tool-trajectorycheck all have a `.venv` and a runnable
+# suite, so `collected_test_count` would have worked for them -- the map was simply
+# incomplete, and the gap was not theoretical. `tool-agentbound` said 129 while the
+# suite collected 140, and every run of this checker passed.
 TEST_COUNT_SUITES = {
     "tool-policygate": "policygate",
     "tool-mcpaudit": "mcpaudit",
     "tool-boundary-corpus": "tool-boundary-corpus",
+    "tool-agentbound": "agentbound",
+    "tool-mcp-nameguard": "mcp-nameguard",
+    "tool-trajectorycheck": "trajectorycheck",
 }
 
 
