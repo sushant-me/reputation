@@ -111,6 +111,12 @@ SURFACES = [
     # live in sibling repositories on the workstation and are checked out beside
     # this one in CI.
     "agentbound/README.md",
+    # A public claims document of its own: it states finding counts, a
+    # per-rule table and a precision figure. Added after noticing that
+    # README.md was the only agentbound file listed, so every number in
+    # here was unchecked -- the same gap that let three test counts drift
+    # in the map that was supposed to verify them.
+    "agentbound/SURVEY.md",
     "mcpaudit/README.md",
     "policygate/README.md",
     "mcp-nameguard/README.md",
@@ -285,6 +291,15 @@ FORBIDDEN = {
 # "three". A checker that reports errors which are not errors gets switched off, so
 # each rule names the file and the exact string that file should carry.
 REQUIRED: list[tuple[str, str, str]] = [
+    # The willingness to publish your own false positives is the credibility of this
+    # survey. Pinned so a tidy-up cannot remove the admission while keeping the number.
+    ("agentbound/SURVEY.md", "I wrote that corpus",
+     "the survey keeps stating that the corpus is self-authored, which is why it is not evidence"),
+    ("agentbound/SURVEY.md", "verified false",
+     "the per-rule table keeps the column counting findings that were WRONG"),
+    ("agentbound/SURVEY.md", "Do not publish unverified findings",
+     "the rule that a finding not read in the source is not a finding stays written down"),
+
     # (file, phrase that must appear, what it protects)
     ("portfolio/src/app/page.tsx", "one at an IEEE conference",
      "the PREBAS status stays 'accepted at an IEEE conference', not 'in IEEE Xplore'"),
