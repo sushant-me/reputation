@@ -119,18 +119,43 @@ That is also why the fix is rotation rather than deletion: the redaction protect
 
 `check_secrets.py` exists because `sentiment-analysis` sat public from 2025-06-13
 with a live Twitter/X OAuth set — consumer key, consumer secret, access token and
-access-token secret — for **fifteen months**, and nothing caught it. The script was
-written specifically to close that hole.
+access-token secret — for **fifteen months**, and nothing caught it.
 
-It found three more. That is the scanner working as designed — but it also means
-**the scan was not being run on a schedule.** The oldest of these has been public
-since mid-2025 and the tool that catches it already existed.
+**Two claims I made about the CI were wrong, and are corrected here.**
 
-Two things worth checking in `.github/workflows/secrets.yml`: that it runs on a
-**schedule** rather than only on push, and that its `GH_TOKEN` is present in the
-scheduled context. A repository that stops receiving pushes stops being checked, and
-a scan that cannot enumerate fails closed — which is what happened when I ran it
-with `--repo` pointed at a local path instead of a repository name.
+I first wrote that the scan "was not being run", and then that it "had never
+passed". Checked against the run history, neither holds:
+
+- **It is scheduled.** `secrets.yml` carries `cron: "15 6 * * 1"` — Mondays 06:15
+  UTC — and the scheduled run *did* fire on 2026-09-28.
+- **It ran and it worked.** The scheduled run enumerated 80 owned public
+  repositories and 1,092 files, found all three credentials, and exited 1. That
+  exit code is the tool being correct: it fails when a credential is public. The
+  red X is accurate.
+- **The workflow is new.** Its earliest run is 2026-09-22, so it did not exist
+  while these keys were sitting public through 2025 and most of 2026. It did not
+  miss them; it is the thing that found them.
+
+What the history *does* show is a real bug worth recording. The first runs failed
+with:
+
+> `::error::no repositories enumerated; the scan could not run`
+
+The enumeration returned nothing and the job failed closed — the right failure,
+but not a scan. I reproduced the same message locally by passing a **filesystem
+path** to `--repo` when the flag takes a **repository name**
+(`--repo sushant-me/laya`, not `/home/logic/Work/laya-chat`). Later runs enumerate
+correctly, so either the cause was fixed or it was that invocation.
+
+The practical lesson is smaller than the one I first wrote and more useful: **a
+check that fails closed is only as good as the person reading the red X.** Here it
+was correct for a week and the keys are still live, because the finding sat in a CI
+log rather than in front of someone who could rotate it. That is what this file is
+for.
+
+Two things still worth confirming in `.github/workflows/secrets.yml`: that
+`GH_TOKEN` is present in the **scheduled** context (a schedule may lack secrets a
+push has), and that the enumeration failure mode above cannot recur silently.
 
 **The three honest limits of this scan**, from its own output:
 
@@ -140,4 +165,5 @@ with `--repo` pointed at a local path instead of a repository name.
   a repository that was made private before the run.
 
 Run it again after anything changes.
+
 
