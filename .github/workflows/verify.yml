@@ -32,70 +32,47 @@ jobs:
       - uses: actions/checkout@v5
         with:
           path: reputation
-      - uses: actions/checkout@v5
-        with:
-          repository: sushant-me/sushant-me
-          path: profile-readme
-      - uses: actions/checkout@v5
-        with:
-          repository: sushant-me/hire
-          path: hire
-      - uses: actions/checkout@v5
-        with:
-          repository: sushant-me/Portfolio
-          path: portfolio
+
+      # All sibling checkouts in ONE step, over git rather than the REST API.
+      #
+      # These were 14 separate `actions/checkout` steps, and that exhausts GitHub's
+      # API limit for the installation: a run failed with "API rate limit exceeded
+      # for installation" partway down the list, before any check had run. The
+      # number of checkouts is not going to shrink, so they happen once here.
+      - name: Check out the sibling repositories the surfaces live in
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          for pair in \
+            "sushant-me/sushant-me:profile-readme" \
+            "sushant-me/hire:hire" \
+            "sushant-me/Portfolio:portfolio" \
+            "sushant-me/agentbound:agentbound" \
+            "sushant-me/mcpaudit:mcpaudit" \
+            "sushant-me/policygate:policygate" \
+            "sushant-me/mcp-nameguard:mcp-nameguard" \
+            "sushant-me/trajectorycheck:trajectorycheck" \
+            "sushant-me/tool-boundary-corpus:tool-boundary-corpus" \
+            "sushant-me/beyond-attention:beyond-attention" \
+            "sushant-me/writeups:writeups" \
+            "sushant-me/agent-review-sample:agent-review-sample" \
+            "sushant-me/mcp-audit-sample:mcp-audit-sample" \
+            "sushant-me/Edge-Native_Semantic_Firewall_:Edge-Native_Semantic_Firewall_" \
+          ; do
+            repo="${pair%%:*}"; dir="${pair##*:}"
+            git clone --quiet --depth 1 \
+              "https://x-access-token:${GH_TOKEN}@github.com/${repo}.git" "$dir"
+            echo "cloned ${repo} -> ${dir}"
+          done
 
       # The project READMEs are claims surfaces too - rule counts, test counts,
       # measured percentages - so they are checked rather than assumed.
-      - uses: actions/checkout@v5
-        with:
-          repository: sushant-me/agentbound
-          path: agentbound
-      - uses: actions/checkout@v5
-        with:
-          repository: sushant-me/mcpaudit
-          path: mcpaudit
-      - uses: actions/checkout@v5
-        with:
-          repository: sushant-me/policygate
-          path: policygate
-      - uses: actions/checkout@v5
-        with:
-          repository: sushant-me/mcp-nameguard
-          path: mcp-nameguard
-      - uses: actions/checkout@v5
-        with:
-          repository: sushant-me/trajectorycheck
-          path: trajectorycheck
-      - uses: actions/checkout@v5
-        with:
-          repository: sushant-me/tool-boundary-corpus
-          path: tool-boundary-corpus
 
       # The posts, the work sample and the paper's own documents make public claims
       # too - the benchmark post states precision and recall, the review sample
       # asserts four findings reproduce, and the paper README carries the measured
       # numbers. They were not scanned because the list was written by hand.
-      - uses: actions/checkout@v5
-        with:
-          repository: sushant-me/beyond-attention
-          path: beyond-attention
-      - uses: actions/checkout@v5
-        with:
-          repository: sushant-me/writeups
-          path: writeups
-      - uses: actions/checkout@v5
-        with:
-          repository: sushant-me/agent-review-sample
-          path: agent-review-sample
-      - uses: actions/checkout@v5
-        with:
-          repository: sushant-me/mcp-audit-sample
-          path: mcp-audit-sample
-      - uses: actions/checkout@v5
-        with:
-          repository: sushant-me/Edge-Native_Semantic_Firewall_
-          path: Edge-Native_Semantic_Firewall_
 
       - uses: actions/setup-python@v5
         with:
