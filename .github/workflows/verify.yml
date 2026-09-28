@@ -127,6 +127,22 @@ jobs:
       - name: Install pdftotext (poppler-utils)
         run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
 
+      # pytest, because the test-count claims are re-derived by running the sibling
+      # suites. The check used to require each repository's own `.venv`, which a CI
+      # checkout never has -- it is gitignored -- so all six were re-derived on the
+      # workstation and skipped here, under the message "suite not in this checkout".
+      # That message was wrong twice: the suite WAS here, and the missing thing was an
+      # interpreter. It now falls back to this one, which makes the counts checkable in
+      # CI at all.
+      #
+      # It does not make them authoritative. A different interpreter collects a
+      # different number, so where a repository has no `.venv` the observed and claimed
+      # counts are both printed rather than compared: mcpaudit collects 89 under its own
+      # venv and 59 here, with no collection error either way, because it is a Unicode
+      # scanner and its parametrisation depends on the interpreter.
+      - name: Install pytest
+        run: python3 -m pip install --quiet pytest
+
       - name: Check the public surfaces for stale or wrong claims
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -604,9 +604,18 @@ TEST_COUNT_SUITES = {
 def collected_test_count(repo: str) -> int | None:
     """What pytest actually collects in a sibling repository, or None if it is not here."""
     root = WORKSPACE / repo
-    python = root / ".venv" / "bin" / "python"
-    if not root.is_dir() or not python.exists():
+    if not root.is_dir():
         return None
+    # Prefer the repository's own interpreter, but do not require one. A CI checkout
+    # has no `.venv` -- it is gitignored -- so the old requirement meant all six test
+    # counts were re-derived on the workstation and skipped in CI, which reported
+    # "suite not in this checkout" whether the repository was there or not. That
+    # message sent the reader looking for a missing repository rather than a missing
+    # interpreter. Falling back to the running interpreter makes the count checkable
+    # wherever pytest and the suite's imports resolve.
+    python = root / ".venv" / "bin" / "python"
+    if not python.exists():
+        python = pathlib.Path(sys.executable)
     try:
         out = subprocess.run(
             [str(python), "-m", "pytest", "--collect-only", "-q"],
@@ -617,6 +626,11 @@ def collected_test_count(repo: str) -> int | None:
     found = re.search(r"(\d+)\s+tests? collected", out)
     return int(found.group(1)) if found else None
 
+
+
+def has_own_interpreter(repo: str) -> bool:
+    """Whether the repository ships the interpreter its count was measured with."""
+    return (WORKSPACE / repo / ".venv" / "bin" / "python").exists()
 
 def test_count_disagreements() -> tuple[list[str], int, list[str]]:
     """Every test count stated in evidence.json, compared with the suite it describes.
@@ -643,9 +657,23 @@ def test_count_disagreements() -> tuple[list[str], int, list[str]]:
             continue
         actual = collected_test_count(repo)
         if actual is None:
-            skipped.append(f"evidence.json {claim['id']} (suite not in this checkout)")
+            root = WORKSPACE / repo
+            why = ("repository not in this checkout" if not root.is_dir()
+                   else "repository is here but its suite could not be collected")
+            skipped.append(f"evidence.json {claim['id']} ({why})")
             continue
         checked += 1
+        if not has_own_interpreter(repo):
+            # A different interpreter collects a different number. mcpaudit is a
+            # Unicode scanner and collects 89 under its own venv and 59 under the
+            # job interpreter, with no collection error either way -- so the count is
+            # a function of the environment, not a fixed property of the repository.
+            # Compared-and-failed here would be a false alarm; skipped silently would
+            # be the round-21 bug again. Recorded with both numbers instead.
+            skipped.append(
+                f"evidence.json {claim['id']} (no .venv here; this interpreter collects "
+                f"{actual}, the claim says {stated})")
+            continue
         if stated != actual:
             problems.append(
                 f"evidence.json: {claim['id']} states {stated} tests, but pytest "
