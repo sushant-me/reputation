@@ -920,6 +920,52 @@ def profile_writing_is_current(newest: int = 2) -> tuple[list[str], int]:
                 f"newest post {slug!r}, which exists in writeups/")
     return problems, checked
 
+
+def portfolio_matches_writeups() -> tuple[list[str], int]:
+    """Every post in `writeups/` must also be in the portfolio's build and its feed.
+
+    The portfolio is generated FROM writeups/ by `scripts/sync-writeups.py`, which is
+    exactly why this can drift silently: publishing a post updates the source of
+    truth and nothing forces the generated copy to follow. The live site would simply
+    keep showing the old list, and no existing rule looks at the portfolio's post set
+    at all -- `VERSION_CHECKED` covers its page.tsx for release labels, and the
+    required/forbidden rules cover specific phrases, but nothing compares it to disk.
+
+    This is the same shape as the profile Writing list, one level down: a generated
+    list that is correct when generated and stale the moment the source changes.
+    """
+    problems: list[str] = []
+    checked = 0
+    src = sorted((WORKSPACE / "writeups").glob("2026-*.md"))
+    if not src:
+        return problems, 0
+
+    gen = sorted((WORKSPACE / "portfolio" / "content" / "writing").glob("*.md"))
+    checked += 1
+    if len(gen) != len(src):
+        problems.append(
+            f"portfolio/content/writing holds {len(gen)} posts but writeups/ holds "
+            f"{len(src)}; run portfolio/scripts/sync-writeups.py")
+
+    feed = WORKSPACE / "portfolio" / "public" / "feed.xml"
+    if feed.exists():
+        checked += 1
+        items = feed.read_text(encoding="utf-8").count("<item>")
+        if items != len(src):
+            problems.append(
+                f"portfolio/public/feed.xml has {items} items but writeups/ holds "
+                f"{len(src)}; run portfolio/scripts/sync-writeups.py")
+
+    # Every source slug must survive into the generated set by name, not just by count.
+    have = {q.stem for q in gen}
+    for path in src:
+        slug = re.sub(r"^[0-9]+-[0-9]+-[0-9]+-", "", path.stem)
+        checked += 1
+        if not any(slug in h or h in slug for h in have):
+            problems.append(
+                f"portfolio/content/writing is missing the post {slug!r}")
+    return problems, checked
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--json", action="store_true")
@@ -1037,6 +1083,11 @@ def main(argv: list[str] | None = None) -> int:
     pw_problems, pw_checked = profile_writing_is_current()
     problems.extend(pw_problems)
     counts_checked += pw_checked
+
+    # 7. The generated portfolio against its source, which is writeups/.
+    pf_problems, pf_checked = portfolio_matches_writeups()
+    problems.extend(pf_problems)
+    counts_checked += pf_checked
 
     # 5. Live: a release label must be the release it names - on the surfaces where
     #    linking a version means "this is the current one".
