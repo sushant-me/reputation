@@ -966,6 +966,21 @@ def portfolio_matches_writeups() -> tuple[list[str], int]:
                 f"portfolio/content/writing is missing the post {slug!r}")
     return problems, checked
 
+
+# Surfaces that CANNOT be present in the GitHub Actions checkout, named with the
+# reason. This exists because CI ran `--min-surfaces 22` and CI has exactly 22, so it
+# passed -- while 7 of 29 declarations and 45 of 85 files, including the CV and the
+# queued emails, were never checked at all. A floor tolerates a known loss forever and
+# cannot distinguish it from the loss of a surface nobody noticed.
+#
+# Naming them does not verify them. It makes the gap visible on every run and turns
+# any NEW absence into a failure, which is the property that was missing.
+NOT_IN_CI = {
+    "job-kit": "not a git repository, so it cannot be checked out; verified locally only",
+    "cv": "private repository; the workflow's GITHUB_TOKEN cannot read another repo, "
+          "so it needs a PAT secret before it can join the CI run",
+}
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--json", action="store_true")
@@ -1013,8 +1028,19 @@ def main(argv: list[str] | None = None) -> int:
     problems.extend(check_pdf_sources(files))
 
     if args.require_all and missing_globs:
-        problems.append(
-            "--require-all: nothing matched " + ", ".join(missing_globs))
+        # An absent surface is a failure unless it is one of the named impossibilities.
+        # Silence is the failure mode: a run that reads fewer files than it declares
+        # must not report PASS without saying which files it did not read.
+        exempt, unexpected = [], []
+        for g in missing_globs:
+            top = g.split("/")[0]
+            (exempt if top in NOT_IN_CI else unexpected).append(g)
+        if exempt:
+            print("not in this checkout, and named as impossible: "
+                  + ", ".join(f"{g} ({NOT_IN_CI[g.split('/')[0]]})" for g in exempt))
+        if unexpected:
+            problems.append(
+                "--require-all: nothing matched " + ", ".join(unexpected))
 
     # 1. Forbidden strings: the error history, enforced.
     for path in files:
@@ -1034,7 +1060,11 @@ def main(argv: list[str] | None = None) -> int:
     for target, phrase, what in REQUIRED:
         path = WORKSPACE / target
         if not path.exists():
-            if args.require_all:
+            # Same rule as the missing globs above: an absent surface is a failure
+            # unless it is one of the named impossibilities. Without the exemption,
+            # --require-all cannot be used in CI at all, which is why CI ran
+            # --min-surfaces instead and tolerated 8 unenforced job-kit assertions.
+            if args.require_all and target.split("/")[0] not in NOT_IN_CI:
                 problems.append(f"{what}: {target} is not present in this checkout")
             continue
         if normalise(phrase) not in normalise(read(path)):

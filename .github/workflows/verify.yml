@@ -109,11 +109,16 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 reputation/verify_evidence.py
 
-      # The CVs and job-kit are not repositories, so this step covers what is
-      # reachable from CI: the profile, the hire page, the portfolio source, the
-      # evidence sheet and the six project READMEs. Running it with --require-all
-      # on the workstation adds the CVs, job-kit and everything else. The
-      # --min-surfaces floor makes a run that found nothing to read fail.
+      # --require-all, not a floor. This step used `--min-surfaces 22`, and CI has
+      # exactly 22, so it passed while 7 of 29 declarations and 45 of 85 files were
+      # never checked -- including the CV and the queued emails. A floor tolerates a
+      # known loss forever and cannot tell it apart from a loss nobody noticed.
+      #
+      # Two surfaces genuinely cannot be here and are named with their reason in
+      # check_surfaces.NOT_IN_CI, so the gap is printed on every run and any NEW
+      # absence fails. The CV is a private repository (the workflow token cannot read
+      # another repo, so it needs a PAT secret to join); job-kit is not a repository
+      # at all, so it is verified on the workstation only.
       # pdftotext is what makes a PDF surface readable at all. It ships on the
       # ubuntu-latest image, which is exactly why the dependency was never stated: if it
       # were ever absent, every PDF assertion would have passed on an empty string rather
@@ -125,7 +130,7 @@ jobs:
       - name: Check the public surfaces for stale or wrong claims
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python3 reputation/check_surfaces.py --min-surfaces 22
+        run: python3 reputation/check_surfaces.py --require-all
 
       # Dead links rot silently. Two were found on the portfolio by hand: one to a
       # repository that is private, so it 404'd for every visitor, and one with a
