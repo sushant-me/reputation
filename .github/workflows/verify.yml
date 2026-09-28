@@ -99,7 +99,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
 
       # The checks read public sources over the unauthenticated GitHub API, so
       # this job needs no credentials. GH_TOKEN is passed only so the scripts can

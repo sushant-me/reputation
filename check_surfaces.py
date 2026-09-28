@@ -628,6 +628,28 @@ def collected_test_count(repo: str) -> int | None:
 
 
 
+
+def claimed_python_range(claim: dict) -> tuple[tuple[int, int], tuple[int, int]] | None:
+    """The Python range a claim states it was measured under, from its metrics.
+
+    Both tool-mcpaudit and tool-boundary-corpus already say "CI on 3.11-3.13", and
+    both counts change outside it -- 89 becomes 59 and 58 becomes 36 on 3.14, because
+    the parametrisation follows `unicodedata` and that moves with the CPython release.
+    The information needed to read that correctly was in the claim all along; it just
+    was not being used. Reading it turns a disagreement into an explanation, and keeps
+    a genuine disagreement inside the stated range a failure.
+    """
+    lo = hi = None
+    for metric in claim.get("metrics") or []:
+        if not metric.strip().lower().startswith("ci on"):
+            continue
+        found = re.findall(r"(\d+)\.(\d+)", metric)
+        for major, minor in found:
+            v = (int(major), int(minor))
+            lo = v if lo is None or v < lo else lo
+            hi = v if hi is None or v > hi else hi
+    return (lo, hi) if lo and hi else None
+
 def has_own_interpreter(repo: str) -> bool:
     """Whether the repository ships the interpreter its count was measured with."""
     return (WORKSPACE / repo / ".venv" / "bin" / "python").exists()
@@ -670,9 +692,32 @@ def test_count_disagreements() -> tuple[list[str], int, list[str]]:
             # a function of the environment, not a fixed property of the repository.
             # Compared-and-failed here would be a false alarm; skipped silently would
             # be the round-21 bug again. Recorded with both numbers instead.
-            skipped.append(
-                f"evidence.json {claim['id']} (no .venv here; this interpreter collects "
-                f"{actual}, the claim says {stated})")
+            cur = sys.version_info[:2]
+            rng = claimed_python_range(claim)
+            if rng and not (rng[0] <= cur <= rng[1]):
+                # Outside the range the claim names, so the two numbers are not
+                # comparable and failing on them would be a false alarm. Recorded with
+                # the range, the interpreter and the observed count.
+                skipped.append(
+                    f"evidence.json {claim['id']} (the claim states Python "
+                    f"{rng[0][0]}.{rng[0][1]}-{rng[1][0]}.{rng[1][1]}; this interpreter "
+                    f"is {cur[0]}.{cur[1]} and collects {actual})")
+                continue
+            if rng is None:
+                skipped.append(
+                    f"evidence.json {claim['id']} (no .venv and the claim names no "
+                    f"Python range; this interpreter collects {actual}, the claim "
+                    f"says {stated})")
+                continue
+            # Inside the range the claim names, the count IS comparable, so a
+            # disagreement here is a real one and not an environment artifact.
+            checked += 1
+            if stated != actual:
+                problems.append(
+                    f"evidence.json: {claim['id']} states {stated} tests, but pytest "
+                    f"collects {actual} on Python {cur[0]}.{cur[1]}, which is inside the "
+                    f"range the claim names "
+                    f"({rng[0][0]}.{rng[0][1]}-{rng[1][0]}.{rng[1][1]})")
             continue
         if stated != actual:
             problems.append(
