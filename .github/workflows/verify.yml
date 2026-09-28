@@ -120,6 +120,30 @@ jobs:
       - name: Install pytest
         run: python3 -m pip install --quiet pytest
 
+      # The repositories' own dependencies, because the counts depend on them.
+      #
+      # The counts were measured in each repository's venv. On Python 3.13, inside the
+      # range both claims name, a bare interpreter collects 36 where tool-boundary-corpus
+      # says 58 and 59 where mcpaudit says 89 -- so the difference is not the version but
+      # what is installed. mcpaudit is a Unicode scanner and its parametrisation follows
+      # the tables that are present.
+      #
+      # A failure to install is reported rather than swallowed: it leaves the suite
+      # collectable in a different configuration, which then shows up as a count
+      # disagreement naming the interpreter. Silence here would be the round-21 bug.
+      - name: Install the tool repositories so their suites can be collected
+        run: |
+          set -e
+          for d in agentbound mcpaudit policygate mcp-nameguard trajectorycheck tool-boundary-corpus; do
+            if [ -f "$d/pyproject.toml" ]; then
+              echo "installing $d"
+              python3 -m pip install --quiet -e "$d"
+            else
+              echo "::error::$d has no pyproject.toml, so its suite is not being installed"
+              exit 1
+            fi
+          done
+
       - name: Check the public surfaces for stale or wrong claims
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
