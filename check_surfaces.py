@@ -891,6 +891,35 @@ def hackinghub_figure_disagreements(files: list[pathlib.Path]) -> list[str]:
     return problems
 
 
+
+def profile_writing_is_current(newest: int = 2) -> tuple[list[str], int]:
+    """The profile README must link the newest posts in `writeups/`.
+
+    Written after the Writing section was found listing six posts while fourteen
+    existed -- neither post published that week was on it, including the survey.
+    Every other part of the profile was covered by a rule; the Writing list was
+    covered by nothing, because a list can be correct on the day it is written and
+    silently stale the next time a post is published.
+
+    A count check would not have caught it either: six links is a plausible number.
+    Comparing against the newest file names on disk is what makes it drift-proof.
+    """
+    problems: list[str] = []
+    profile = WORKSPACE / "profile-readme" / "README.md"
+    posts = sorted((WORKSPACE / "writeups").glob("2026-*.md"))
+    if not profile.exists() or not posts:
+        return problems, 0
+    text = profile.read_text(encoding="utf-8")
+    checked = 0
+    for path in posts[-newest:]:
+        slug = re.sub(r"^[0-9]+-[0-9]+-[0-9]+-", "", path.stem)
+        checked += 1
+        if slug not in text:
+            problems.append(
+                f"profile-readme/README.md: the Writing section does not link the "
+                f"newest post {slug!r}, which exists in writeups/")
+    return problems, checked
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--json", action="store_true")
@@ -1003,6 +1032,11 @@ def main(argv: list[str] | None = None) -> int:
     # 4. The deployed pages, which nothing else looks at - including any count on them.
     live_problems, live_checked = check_live_sites(truth)
     problems.extend(live_problems)
+
+    # 6. The profile's Writing list against what is actually on disk.
+    pw_problems, pw_checked = profile_writing_is_current()
+    problems.extend(pw_problems)
+    counts_checked += pw_checked
 
     # 5. Live: a release label must be the release it names - on the surfaces where
     #    linking a version means "this is the current one".
