@@ -186,3 +186,28 @@ gh api notifications --paginate -q 'length'     # 0 = nothing unread waiting on 
 If a row has no next action, it is not a loop — it is a decision you have not made yet. Make it.
 
 ---
+
+---
+
+# Closed since: the Frontiers manuscript exists
+
+**The loop that said the article needed writing is done.** **`FRONTIERS-MANUSCRIPT.md` is a complete
+peer-reviewed article — 8 sections, ~7,300 words (5,928 countable per the venue's rule), a 183-word
+abstract, and 11 references with every entry's verification state labelled.**
+
+```
+venue     Frontiers in Computer Science · Research Topic "Software security in the era of
+          autonomous and generative AI" (topic 79870)
+type      Original Research (A-type fee tier) — confirmed from the topic page
+deadline  **31 December 2026** — "currently accepting articles"
+limits    12,000 words / 350-word abstract / 15 display items — **from the venue, replacing
+          the 5,000-7,000 band and "15 references" I had carried over from a different venue**
+state     a cover letter, a fee-support application, and 5 of 9 submission checks are done;
+          the rest are form fields, a fee, or questions the guidelines leave to an editor
+guard     `check_manuscript.py` — 14 rules, every one mutation-tested, PASS
+backup    368 KB, 16 files, md5 manifest, staleness-checked
+```
+
+**Honest note:** **the first draft of this row in the workspace claimed "the article does not exist"
+for several rounds after it did.** **The same file also carried imagined limits from another venue.**
+**Both are corrected, and the corrections are recorded rather than the errors deleted.**
