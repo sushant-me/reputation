@@ -335,6 +335,16 @@ REQUIRED: list[tuple[str, str, str]] = [
     ("profile-readme/README.md", "117-byte", "the corrected size survives a reword"),
     ("policygate/README.md", "Rule A hard-denial",
      "the paper's own label, not a paraphrase of it"),
+    # THE CTF RESULT, required on every surface that carries it. Added 30 Sep 2026 after finding
+    # that a WON international final was recorded as "qualified ... and competed" on the profile,
+    # all four CV HTML variants and the CV PDF -- while nothing checked for the win. A claim this
+    # size that no assertion guards is a claim that regresses silently.
+    ("profile-readme/README.md", "1st, Grand Finale", "the CTF win"),
+    ("cv/Sushant_Poudel_CV.md", "won the Grand Finale", "the CTF win"),
+    ("cv/Sushant_Poudel_CV.html", "won the eight-team Grand Finale", "the CTF win"),
+    ("cv/Sushant_Poudel_CV_AISecurity.html", "won the eight-team Grand Finale", "the CTF win"),
+    ("cv/Sushant_Poudel_University_Resume.html", "won the eight-team Grand Finale", "the CTF win"),
+    ("hire/index.html", "1st place, NullOrigin CTF 2026 Grand Finale", "the CTF win"),
     ("profile-readme/README.md", "23 agent tool-boundary cases", "the corpus count"),
     # CORRECTED 30 Sep 2026. This assertion REQUIRED the over-claim: it demanded the exact
     # phrasing "23 labelled agent tool-boundary cases", which read as though the scanner is
