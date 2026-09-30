@@ -167,7 +167,7 @@ pitch, because the acceptance already exists.**
              already uploaded; ~USD 19; receipt to the CMT console or conference@ncit.edu.np
 NOW      1  **Pay NRs. 2,500 and post the receipt** → firewall paper published in the ICICSET2026
              proceedings. Camera-ready already uploaded; ~USD 19; the cheapest sure publication here
-         2  MAPI-6K: withdraw (Path A) or ask the deadline (Path B)
+         2  Cyber-AI Paper #4005: withdraw (Path A) or ask the deadline (Path B)
 CLOCK    3  IEEE S&P special issue — 1 Nov 2026 — a ~5,000-word CVD-process article. The
              go-github arc (#4556 merged -> #4564 carries "Address feedback from sushant-me"
              -> #4579 merged, name in AUTHORS) is exactly the process story its CFP asks for.
