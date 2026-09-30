@@ -336,7 +336,13 @@ REQUIRED: list[tuple[str, str, str]] = [
     ("policygate/README.md", "Rule A hard-denial",
      "the paper's own label, not a paraphrase of it"),
     ("profile-readme/README.md", "23 agent tool-boundary cases", "the corpus count"),
-    ("hire/index.html", "23 labelled agent tool-boundary cases", "the corpus count"),
+    # CORRECTED 30 Sep 2026. This assertion REQUIRED the over-claim: it demanded the exact
+    # phrasing "23 labelled agent tool-boundary cases", which read as though the scanner is
+    # scored on all 23. It is scored on 5; the other 18 exercise a second tool. So the guard
+    # written to catch a stale corpus count was enforcing the wrong one, and it failed when the
+    # page was fixed -- with the message "a fix by deletion is not a fix", which cannot tell a
+    # correction from a deletion. Now it requires the corrected phrasing.
+    ("hire/index.html", "5 of which score my scanner", "the corpus attribution"),
     ("reputation/OPEN-LOOPS.md", "23 labelled cases", "the corpus count"),
     ("job-kit/PROPOSAL.md", "23 labelled cases", "the corpus count"),
     ("job-kit/PROPOSAL.md", "Grow the 23 self-authored cases", "the corpus count"),
