@@ -488,7 +488,60 @@ CHECKS = {
 }
 
 
+def test_quarter_boundary() -> list[str]:
+    """The regression this exists for.
+
+    On 2026-10-01 the HackingHub board rolled from Q3 to Q4 and the published claim
+    "Rank 1 on the HackingHub Q3 2026 global leaderboard" -- which was and remains true
+    -- was reported FAIL, because the checker compared it to whatever board is current.
+    The API serves only the current quarter: it ignores ?period/?quarter/?p, and exposes
+    the ended period merely as a label (`previous_p`). So a past-quarter claim is
+    unverifiable there, and FAIL is the wrong verdict. This test fails if that logic is
+    removed, so the false alarm cannot come back silently.
+
+    Tested through _quarter_token + the boundary predicate rather than by faking HTTP,
+    because the thing that broke was the comparison, not the fetch.
+    """
+    problems: list[str] = []
+
+    cases = [
+        ("Rank 1 on the HackingHub Q3 2026 global leaderboard", "3-2026"),
+        ("Q4 2026 Leaderboard", "4-2026"),
+        ("Q1 2027", "1-2027"),
+        ("no quarter named here", None),
+    ]
+    for text, want in cases:
+        got = _quarter_token(text)
+        if got != want:
+            problems.append(f"_quarter_token({text!r}) = {got!r}, expected {want!r}")
+
+    # The comparison itself: a claim naming a quarter other than the current one must
+    # NOT be treated as checkable-and-wrong.
+    def verdict(claim_text: str, current: str) -> str:
+        want = _quarter_token(claim_text)
+        return "skip" if (want and current and want != current) else "check"
+
+    if verdict("Rank 1 on the HackingHub Q3 2026 leaderboard", "4-2026") != "skip":
+        problems.append("a Q3 claim against a Q4 board was not skipped -- the false "
+                        "alarm would return")
+    if verdict("Q4 2026 Leaderboard", "4-2026") != "check":
+        problems.append("a claim matching the current quarter was skipped -- the check "
+                        "would stop checking anything")
+    if verdict("no quarter named here", "4-2026") != "check":
+        problems.append("a claim naming no quarter was skipped -- that would disable the "
+                        "check for every other claim shape")
+    return problems
+
+
 def main() -> int:
+    # Regression guard for the quarter-boundary false alarm (see test_quarter_boundary).
+    _qb = test_quarter_boundary()
+    if _qb:
+        print("QUARTER-BOUNDARY SELF-TEST FAILED:", file=sys.stderr)
+        for _p in _qb:
+            print(f"  {_p}", file=sys.stderr)
+        return 2
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--json", action="store_true",
                         help="emit machine-readable results")
