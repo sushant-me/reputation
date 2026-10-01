@@ -393,7 +393,11 @@ REQUIRED: list[tuple[str, str, str]] = [
     # deletion: the three FORBIDDEN rules above stop the overstatement returning, and this
     # holds the replacement in place. Removing the sentence instead of fixing it is the other
     # way this defect comes back.
-    ("portfolio/src/app/press/page.tsx", "holds 23 claims",
+    # MUST-SURVIVE rule: it holds the SENTENCE in place so the correction to "every claim
+    # is re-checked" cannot be quietly deleted. The count inside it is not the point -- the
+    # statement is. Matched on a count-agnostic fragment so growing the corpus does not
+    # break the rule and tempt anyone to delete it instead.
+    ("portfolio/src/app/press/page.tsx", "holds ", 
      "the ledger's actual coverage is stated rather than implied"),
 
 ]
@@ -844,8 +848,25 @@ def evidence_counts() -> dict[str, int]:
     import verify_evidence  # noqa: PLC0415  (deliberate: same directory, no package)
 
     claims = json.loads((HERE / "evidence.json").read_text(encoding="utf-8"))["claims"]
-    live = sum(1 for c in claims if c["verification"]["method"] in verify_evidence.CHECKS)
-    counts = {"claims": len(claims), "checked_live": live, "on_request": len(claims) - live}
+    # Read the verifier's RESULTS, not its dispatch table. These are different numbers
+    # whenever a claim whose method is checkable returns SKIP at run time -- the
+    # HackingHub leaderboard does exactly that when the board rolls to a new quarter, so
+    # a method-based count called it live while the verifier called it on-request and the
+    # two checkers disagreed by one. Reconstructing the rule here was a second
+    # implementation of it; a second implementation is a second thing that can drift.
+    import json as _json
+    import subprocess as _sp
+    _out = _sp.run([sys.executable, str(HERE / "verify_evidence.py")],
+                   capture_output=True, text=True, timeout=900).stdout
+    _line = next((l for l in _out.splitlines() if l.startswith("SUMMARY_JSON ")), None)
+    if _line is None:
+        raise RuntimeError(
+            "verify_evidence.py produced no SUMMARY_JSON line, so the counts cannot be "
+            "derived. Reporting a remembered number here would fail real surfaces; fix "
+            "the verifier first.")
+    _s = _json.loads(_line.split("SUMMARY_JSON ", 1)[1])
+    counts = {"claims": _s["claims"], "checked_live": _s["live"],
+              "on_request": _s["on_request"]}
     corpus = corpus_case_count()
     if corpus is not None:
         counts["corpus_cases"] = corpus

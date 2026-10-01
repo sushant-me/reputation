@@ -71,6 +71,12 @@ def http_json(url: str) -> dict | None:
         return None
 
 
+
+def _quarter_token(text: str) -> str | None:
+    """'Q3 2026' -> '3-2026'. Returns None when the text names no quarter."""
+    m = re.search(r"\bQ([1-4])\s*(20\d\d)\b", text)
+    return f"{m.group(1)}-{m.group(2)}" if m else None
+
 def check_hackinghub_rank(claim: dict) -> tuple[str, str]:
     payload = http_json(claim["source"]["url"])
     if not payload:
@@ -78,6 +84,21 @@ def check_hackinghub_rank(claim: dict) -> tuple[str, str]:
     board = payload.get("leaderboard", {})
     rows = board.get("leaderboard", {})
     expect = claim["verification"]["expect"]
+
+    # The endpoint serves only the CURRENT quarter: it ignores ?period/?quarter/?p and
+    # exposes the previous period merely as a label (`previous_p`). So a claim about a
+    # past quarter cannot be checked against it at all, and reporting FAIL would be
+    # reporting the quarter boundary as a false claim. That happened on 2026-10-01 when
+    # the board rolled Q3 -> Q4 and this claim, which is about Q3, went red while still
+    # being true. Detect the boundary and say so instead.
+    current = str(board.get("current_p", ""))
+    wanted = _quarter_token(claim.get("claim", "") + " " + json.dumps(expect))
+    if wanted and current and wanted != current:
+        return SKIP, (f"the board is now {board.get('title', current)}; this claim is "
+                            f"about period {wanted}, which the API no longer serves "
+                            f"(it ignores period parameters and exposes only previous_p="
+                            f"{board.get('previous_p', '?')})")
+
     me = next((r for r in rows.values()
                if r.get("username") == expect["username"]), None)
     if me is None:
@@ -496,6 +517,10 @@ def main() -> int:
 
     print(f"{'STATUS':<11} {'CLAIM':<62} NOTE")
     print("-" * 118)
+    # A single machine-readable summary line, so no consumer has to re-derive the numbers
+    # from method membership. Counting by method is wrong: a claim whose method is
+    # checkable can still return SKIP at run time (the HackingHub quarter boundary does
+    # exactly this), and those two counts disagree. Results are the truth.
     for row in results:
         label = row["claim"][:60] + ("…" if len(row["claim"]) > 60 else "")
         print(f"{row['status']:<11} {label:<62} {row['note']}")
@@ -504,6 +529,12 @@ def main() -> int:
     on_request = sum(1 for r in results if r["status"] == SKIP)
     print(f"{len(results)} claims: {checked} checked live, "
           f"{on_request} documented on request, {failures} failing")
+    # A machine-readable summary, so no consumer re-derives these numbers from method
+    # membership. That derivation is WRONG: a claim whose method is checkable can still
+    # return SKIP at run time (the HackingHub quarter boundary does exactly this), and
+    # the two counts disagree. The results are the truth.
+    print("SUMMARY_JSON " + json.dumps({"claims": len(results), "live": checked,
+                                        "on_request": on_request, "failing": failures}))
     if failures:
         print("\nA published claim no longer holds. Fix the claim or the source "
               "before it goes in front of anyone.", file=sys.stderr)

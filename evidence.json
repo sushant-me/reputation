@@ -511,6 +511,92 @@
         "26 -> 47 classes mapped",
         "10 -> 20 techniques mapped"
       ]
+    },
+    {
+      "claim": "A defect filed upstream in google/osv-scanner: nameIsRegex PackageOverrides are anchored per-branch, so a top-level alternation silently drops packages from the scan",
+      "source": {
+        "kind": "github_issue",
+        "url": "https://github.com/google/osv-scanner/issues/3120",
+        "repo": "google/osv-scanner",
+        "number": 3120,
+        "author": "sushant-me",
+        "filed": "2026-10-01",
+        "state": "open",
+        "note": "Filed under sushant-me. The contract is stated in docs/configuration.md:107 and restated in the introducing PR; internal/config/config.go:55 compiles \"^\" + name + \"$\" so an alternation escapes the anchors. Reproducer committed at /home/logic/Work/oss-contrib/reproduce.sh; write-up at FINDING.md. No CVE or severity is claimed: the downstream vulnerability-suppression effect was not observed, only the package-filtering step."
+      },
+      "verification": {
+        "method": "github_issue",
+        "url": "https://github.com/google/osv-scanner/issues/3120",
+        "checked": "2026-10-01",
+        "expect": "state == open",
+        "note": "issue exists, is open, and was verified live (HTTP 200) after filing"
+      },
+      "id": "osv_scanner_3120_name_is_regex",
+      "category": "upstream_contribution"
+    },
+    {
+      "claim": "A heap-buffer-overflow write in libpng's png_set_quantize, filed upstream: the owned palette buffer is sized for 256 entries but memcpy'd with num_palette entries",
+      "source": {
+        "kind": "github_issue",
+        "url": "https://github.com/pnggroup/libpng/issues/935",
+        "repo": "pnggroup/libpng",
+        "number": 935,
+        "author": "sushant-me",
+        "filed": "2026-10-01",
+        "state": "open",
+        "verified_by": "read of pngrtran.c in 1.8.0.git (@964b413) and master (1.6.60.git)",
+        "note": "AddressSanitizer: heap-buffer-overflow WRITE of size 900 into a 768-byte region. Allocation is PNG_MAX_PALETTE_LENGTH * sizeof(png_color); the memcpy length is num_palette * sizeof(png_color); the only bound is maximum_colors, applied only above it. Introduced by the owned-copy change that fixed CVE-2026-33416. The sibling png_set_PLTE() rejects >256 with png_error. **Stated limits, do not overstate: NOT reachable from crafted PNG bytes (both file-driven palette sources cap at 256 and libpng never calls it internally); caller-triggered; no CVE or severity claimed; ARM NEON path untested.**"
+      },
+      "verification": {
+        "method": "github_issue",
+        "url": "https://github.com/pnggroup/libpng/issues/935",
+        "checked": "2026-10-01",
+        "expect": "state == open",
+        "note": "issue exists and is open; the source claim was read directly in pngrtran.c on 1.6.60 and 1.8.0. Limits stated in the claim: caller-triggered, not reachable from crafted PNG bytes, no CVE or severity claimed."
+      },
+      "id": "libpng_935_png_set_quantize_overflow",
+      "category": "upstream_contribution"
+    },
+    {
+      "claim": "A pull request opened upstream in google/adk-go that re-enables a test which had never executed: TestRunNode_ErrInvalidRunNodeContext_OnStaticContext was disabled by a bare t.Skip(), and the documented ErrInvalidRunNodeContext contract of RunNode therefore had no executing test",
+      "source": {
+        "kind": "github_pull_request",
+        "url": "https://github.com/google/adk-go/pull/1679",
+        "repo": "google/adk-go",
+        "number": 1679,
+        "author": "sushant-me",
+        "opened": "2026-10-01",
+        "state": "open",
+        "base_commit": "f7e16e0226d8a255e39543df2fdfc0e15041de51",
+        "diff": "workflow/run_node_test.go, 1 line deleted (+0/-1)",
+        "verified_by": "the author re-ran it against a pristine f7e16e0 worktree: git apply --check applies, and `go test ./workflow/ -run ... -v` reports SKIP -> PASS. The coverage gap was demonstrated, not asserted: with the guard at run_node.go:131 mutated to `return zero, nil`, the package still passes (ok 0.672s) while the skip is present and fails (0.712s) once it is removed.",
+        "note": "Checked before opening and stated in the PR body: the skip arrived with the file in 893e4a4 ('V2 release (#1109)') with the guard already present and identical; the file has not been edited since; master still carries t.Skip() at line 31; no open PR mentions run_node, so it is not a duplicate. **Limits, do not overstate: this is a test-only change with no behaviour change; it is OPEN, not merged; ~70% merge confidence; and if a maintainer knows an untraced reason for the skip, the PR body offers to rework it into a recorded t.Skip argument instead.** The author could not run `go build ./...` (container /tmp quota), so verification was at package scope."
+      },
+      "verification": {
+        "method": "github_pr_open_or_merged",
+        "url": "https://github.com/google/adk-go/pull/1679",
+        "checked": "2026-10-01",
+        "expect": "state == open",
+        "note": "live check: the API reports state=open, mergeable=True, commits=1, +0/-1, author=sushant-me. **The claim is that a PR is OPEN, not merged; if it is closed unmerged the claim becomes false and must be corrected.**"
+      },
+      "id": "adk_go_pr_1679_re_enabled_test",
+      "category": "upstream_contribution"
+    },
+    {
+      "claim": "HackTheBox account nofear976 holds Lvl 81 with 98,664 XP and the rank Prodigy, read directly from the signed-in account page",
+      "id": "hackthebox_nofear976_level_xp",
+      "category": "platform_standing",
+      "source": {
+        "kind": "platform_profile",
+        "url": "https://app.hackthebox.com/home",
+        "username": "nofear976"
+      },
+      "detail": "Read 2026-10-01 from app.hackthebox.com/home in the signed-in browser: username nofear976, badge #NP / HACKER, Lvl 81, XP 98,664, HTB Rank Prodigy, Grade 2 out of 3, Season 12 UNRANKED, flags 0/18, weekly streak 1 week. The nearby figure 339/3376 is NOT the level; it sits beside the Prodigy rank label and was misread as a level on the first pass. Level 150 is roughly 241,000 XP further at ~450 XP per easy machine.",
+      "verification": {
+        "method": "human_asserted",
+        "expect": "username nofear976, Lvl 81, 98,664 XP, rank Prodigy",
+        "note": "Not machine-checkable: HTB exposes no public API for this and the pagerank endpoint needs a session. Read by hand from the account page and recorded with the misread that preceded it."
+      }
     }
   ]
 }
