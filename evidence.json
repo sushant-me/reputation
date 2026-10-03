@@ -266,7 +266,7 @@
       "id": "paper-semantic-firewall",
       "category": "publication",
       "claim": "Edge-Native Semantic Firewall for Autonomous LLM Agents: A Structured Chain-of-Thought Verification Framework",
-      "detail": "Accepted with revision at ICICSET 2026 - the 3rd International Conference on Innovation in Computing, Science, Engineering and Technology, hosted at NCIT. The acceptance arrived by email from Microsoft CMT on 2026-09-14 with a camera-ready deadline of 15 September 2026, so camera-ready is in progress. NOT an IEEE paper, and it must not be described as one: the IEEE acceptance this account holds is PREBAS at RTC 2026 (paper #1571322138), and conflating the two put 'Two IEEE papers accepted' on the public homepage until 2026-09-28. Co-authors R. Pandey and A. Pandey, Department of Computer Science and Engineering, Nepal Engineering College. A 3.8B model (Phi-3-mini, 4-bit) on one consumer laptop inside a 4.2 GiB VRAM budget, 600 policy scenarios per condition, no cloud inference. JSON-constrained output without a reasoning field was the least safe evaluator (46.2% unsafe accepts vs 17.2% unconstrained); the structured CoT arm cut false accepts of irreversible hard-denial commands from 71 to 6 and reached 66.3% decision accuracy.",
+      "detail": "PUBLISHED with a DOI: 10.65091/icicset.v3i1.75, Proceedings of the International Conference on Innovation in Computing, Science, Engineering and Technology (ICICSET), issued 2 October 2026, and presented at Hotel Royal Tulip, Kathmandu. Crossref resolves the record with all three authors (S. Poudel, R. Pandey, A. Pandey). Previously recorded as 'accepted with revision' - the acceptance arrived by email from Microsoft CMT on 2026-09-14 and camera-ready was in progress at the time; it is no longer in progress. The conference was hosted at NCIT. NOT an IEEE paper, and it must not be described as one: the IEEE acceptance this account holds is PREBAS at RTC 2026 (paper #1571322138), and conflating the two put 'Two IEEE papers accepted' on the public homepage until 2026-09-28. Co-authors R. Pandey and A. Pandey, Department of Computer Science and Engineering, Nepal Engineering College. A 3.8B model (Phi-3-mini, 4-bit) on one consumer laptop inside a 4.2 GiB VRAM budget, 600 policy scenarios per condition, no cloud inference. JSON-constrained output without a reasoning field was the least safe evaluator (46.2% unsafe accepts vs 17.2% unconstrained); the structured CoT arm cut false accepts of irreversible hard-denial commands from 71 to 6 and reached 66.3% decision accuracy.",
       "source": {
         "kind": "public_repo",
         "url": "https://github.com/sushant-me/Edge-Native_Semantic_Firewall_"
@@ -280,6 +280,12 @@
         "71 -> 6 hard-denial false accepts",
         "66.3% decision accuracy",
         "4.2 GiB VRAM"
+      ],
+      "extra_sources": [
+        {
+          "kind": "http",
+          "url": "https://doi.org/10.65091/icicset.v3i1.75"
+        }
       ]
     },
     {
