@@ -13,18 +13,17 @@
     {
       "id": "hackinghub-rank-1",
       "category": "recognition",
-      "claim": "Rank 1 on the HackingHub Q3 2026 global leaderboard",
-      "detail": "177 flags and 18,125 XP, with 1 gold, 2 silver and 2 bronze awards. The next-ranked account holds 97 flags / 10,095 XP.",
+      "claim": "177 flags, 18,125 XP and 1 gold / 2 silver / 2 bronze awards on HackingHub",
+      "detail": "177 flags and 18,125 XP, with 1 gold, 2 silver and 2 bronze awards - these are live-checkable on the all-time board. The Q3 2026 per-period board, on which this account ranked #1, has since rolled to Q4 2026 and the API serves only the current period (verified: the endpoint returns {\"current_p\":\"4-2026\",\"previous_p\":\"3-2026\"} and no parameter retrieves 3-2026). The Q3 #1 placing is therefore recorded as history rather than asserted as live-checkable; the screenshot is on request. The claims that no longer depend on a rolling board are the ones the verifier now checks.",
       "source": {
         "kind": "api",
-        "url": "https://api.hackinghub.io/leaderboard",
-        "note": "public JSON, period 3-2026"
+        "url": "https://api.hackinghub.io/leaderboard?type=previous",
+        "note": "all-time board; the per-period board is current-only"
       },
       "verification": {
         "method": "hackinghub_rank",
         "expect": {
           "username": "nofear976",
-          "rank": 1,
           "flags": 177,
           "xp": 18125
         }
