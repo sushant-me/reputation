@@ -187,7 +187,7 @@
       "id": "adk-tool-shadowing",
       "category": "security-research",
       "claim": "Fixes and reports for MCP tool shadowing across Google's agent frameworks",
-      "detail": "Framework-reserved tool names (google_search, set_model_response, skill and loop tools) that a server-supplied MCP tool can occupy, bypassing the duplicate-name guard. Open pull requests: adk-go #1606, adk-java #1515, adk-python #7145.",
+      "detail": "Framework-reserved tool names (google_search, set_model_response, skill and loop tools) that a server-supplied MCP tool can occupy, bypassing the duplicate-name guard. Open pull requests: adk-go #1606, adk-java #1515. A third, adk-python #7145, was CLOSED unmerged on 2026-10-02 and is recorded here rather than dropped, because it still reports the same class of defect against a third framework.",
       "source": {
         "kind": "github_prs",
         "repo": "google/adk-go",
@@ -200,11 +200,6 @@
           "kind": "github_pr",
           "repo": "google/adk-java",
           "number": 1515
-        },
-        {
-          "kind": "github_pr",
-          "repo": "google/adk-python",
-          "number": 7145
         }
       ],
       "verification": {
