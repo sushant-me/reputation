@@ -240,3 +240,24 @@ jobs:
               sys.exit(1)
           print(f"stale rule count rejected, as required: {note}")
           PYEOF
+
+      - name: Flag OPEN-LOOPS rows that describe a world that has moved on
+        # Four rows were found stale in one pass, each by hand and each in the same direction: the
+        # row told the reader to wait for, or do, something already done. verify_evidence.py checks
+        # claims against sources; check_surfaces.py checks that pages contain required strings.
+        # Neither asks whether a loop marked "waiting" is still waiting.
+        #
+        # job-kit/ is not a repository and is not checked out here, so the outbox-vs-send-log
+        # comparison cannot run. --allow-missing-inputs records that as deliberate for this build;
+        # the step after it asserts the checker still refuses to pass without those inputs.
+        run: python3 reputation/check_loops.py --allow-missing-inputs
+
+      - name: The missing-input guard fires
+        run: |
+          set -eu
+          if python3 reputation/check_loops.py >/dev/null 2>&1; then
+            echo "check_loops.py passed without its inputs - it must fail instead, because a"
+            echo "pass there means 'nothing was compared', not 'nothing is stale'."
+            exit 1
+          fi
+          echo "guard holds: the checker refused to report clean without its inputs."

@@ -25,12 +25,18 @@ Three checks, each against an artifact on disk rather than an opinion:
 Exit 0 when clean, 1 when anything is flagged. Read-only.
 """
 from __future__ import annotations
-import json, pathlib, re, subprocess, sys
+import json, os, pathlib, re, subprocess, sys
 
 WORK = pathlib.Path("/home/logic/Work")
-KIT = WORK / "job-kit"
+# Overridable so the missing-input path can be tested: in CI job-kit/ does not exist at
+# all, and a guard that has never been exercised is not a guard.
+KIT = pathlib.Path(os.environ.get("JOB_KIT", WORK / "job-kit"))
 HERE = pathlib.Path(__file__).resolve().parent
-LOOPS = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else HERE / "OPEN-LOOPS.md"
+# Flags are not paths. Passing --allow-missing-inputs used to be read as the path to
+# OPEN-LOOPS.md, so the file was "missing", the unauthenticated remote fallback then
+# failed, and the run reported "cannot read" - a flag breaking the check it belonged to.
+ARGS  = [a for a in sys.argv[1:] if not a.startswith("--")]
+LOOPS = pathlib.Path(ARGS[0]) if ARGS else HERE / "OPEN-LOOPS.md"
 SENT = KIT / "SENT-browser.log"
 OUTBOX = KIT / "outbox.json"
 
@@ -73,6 +79,17 @@ def main() -> int:
         text = LOOPS.read_text(encoding="utf-8")
 
     sent, queued = sent_ids(), outbox_ids()
+    # job-kit/ is not a repository and is not checked out in CI, so the outbox-vs-send-log
+    # comparison cannot run there. Saying "no stale loops found" in that state would be the
+    # quiet-checker failure this file exists to catch: it means "nothing was compared".
+    # Fail with the reason, unless --allow-missing-inputs says that is deliberate.
+    if not (SENT.exists() and OUTBOX.exists()) and "--allow-missing-inputs" not in sys.argv:
+        print("  CANNOT RUN - the inputs this check needs are absent:")
+        for x in (OUTBOX, SENT):
+            if not x.exists():
+                print(f"    {x}")
+        print("  Without both, a pass would mean 'nothing was compared', not 'nothing is stale'.")
+        return 3
     print(f"  source          : {LOOPS}")
     print(f"  outbox entries  : {len(queued)}")
     print(f"  sent-log entries: {len(sent)}")
