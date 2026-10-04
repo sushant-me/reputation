@@ -77,6 +77,7 @@ the difference is that it is written down.
 | **`tdd-bdd-final-project` archive state** | I unarchived it to fix CI; that was a change to your account you did not ask for | decide: keep it active (`gh api -X PATCH ... -f archived=true` reverts) | 
 | **HackingHub Q3 #1** | the board resets each quarter, so this becomes a dated achievement rather than a current one | decide whether to defend it in Q4 (costs time) or let it stand | 
 | **WATCHLIST CTF — 4 labs** | low value now that the event context has passed | park it explicitly | 
+| **Infosecurity follow-up — 2 days overdue** | The Next-Gen Infosec pitch went to James Coker on **2026-09-28** (`SENT-browser.log`, id `infosecurity-nextgen-pitch`), and `STATUS.md` calls it *the highest-probability acceptance on the board*. His stated decision date was ~1 October and their review window is a week, and **the follow-up has not been sent**. The body is written and verified at `magazine/FOLLOW-UP-infosecurity.txt` (199 words, greeting through sign-off). **Note the sending tool cannot do this one:** `sendgbrowser.py` composes a new message (`view=cm`), and has no reply/thread support — a grep for `reply`/`In-Reply-To`/`thread_id` finds nothing. The instruction is to **reply in the existing 27 Sep thread**, so this is a manual two-minute action in Gmail, not a queue entry. | **reply in the existing thread** with `magazine/FOLLOW-UP-infosecurity.txt` pasted whole. Do not start a new thread and do not queue it for `sendgbrowser.py`. |
 
 ## The standing decision
 
