@@ -72,11 +72,12 @@ the difference is that it is written down.
 | **CV placeholders** | the university CV has two blanks I refused to invent | fill in the expected graduation month and the high-school GPA | 
 | ~~Sending the applications at all~~ | **This loop was wrong.** It said there was *"no credential to send with"* — no mail client, no SMTP host, no API key — and named a Gmail app password *"the single highest-payoff unblock"*. **Sending was never blocked.** A browser-based sender drives the signed-in Gmail session over CDP: `job-kit/sendgbrowser.py` fills the composer, **reads the body back and refuses to send unless the whitespace-normalised text matches the source**, confirms the recipient chip, and appends to `job-kit/SENT-browser.log`. **29 messages are logged as sent.** The SMTP route (`job-kit/mailer.py`, 18 tests) was never usable here and is superseded; `~/.config/job-kit/smtp` is still absent and no longer needed. **Nothing to do.** | done |
 | **Fellowship timing** | researched and verified: the OpenAI Safety Fellowship **closed 3 May** (its cohort started 14 Sept), MATS **Winter 2027 is closed**, and the Long-Term Future Fund no longer exists. The rolling route that is open today is the **Transformative AI Fund** (individuals, any country, $10k–$150k) | read `job-kit/FELLOWSHIPS.md`; the fund enquiry is queued in the outbox, and the fellowship scope question is queued with it. **The proposal those applications need now exists**: `job-kit/PROPOSAL.md` (+ `PROPOSAL.pdf`, 2 pages) — *Fail-closed enforcement for agent tool calls*, with a research question, three deliverables each carrying an acceptance test that can fail, a $48k/12-month budget, and three stated ways the bet could be wrong. The next window is **early 2027**; what remains is tightening it, not writing it | now, then Jan 2027 |
-| **Transformative AI Fund draft** | a full draft exists and is eligible (individuals, any country) | an enquiry email is queued in `job-kit/outbox.json` and sends once the credential exists; then submit the full draft, or shelve it deliberately — do not leave it in limbo | 
+| **Transformative AI Fund draft** | a full draft exists and is eligible (individuals, any country). **The enquiry is SENT, not queued** — `SENT-browser.log` records `fund-enquiry` to `transformativeai@effectivealtruismfunds.org`, and `fellowship-next-round` to `openaifellows@constellation.org`. This row still said "queued … sends once the credential exists", which was wrong twice over: it had already gone, and the credential it named is the SMTP route the struck-out row above records as superseded and never needed. | the enquiry is out — **watch for the reply**; if the fund answers, submit the full draft, and if it does not, shelve it deliberately rather than leaving it in limbo | 
 | ~~Live site shows the old go-github wording~~ | **This loop was wrong, and wrong for several rounds.** I reasoned that because `sushantpoudel2028.com.np` is not served from the `Portfolio` repo by GitHub Pages, correcting `page.tsx` could not have changed what a visitor reads. It had: the host is a Cloudflare-fronted static export (`next.config.ts` sets `output: 'export'`) that rebuilds on every push to `main`, and the live page has carried the corrections since the commit that made them — `117-byte` present, the superseded size absent, `generalised into` present. **Nothing to do.** `check_surfaces.py` now fetches both deployed pages and asserts this, so "committed but not deployed" is a failure rather than a guess — and so is instructing you to redeploy a site that has already rebuilt itself. | done |
 | **`tdd-bdd-final-project` archive state** | I unarchived it to fix CI; that was a change to your account you did not ask for | decide: keep it active (`gh api -X PATCH ... -f archived=true` reverts) | 
 | **HackingHub Q3 #1** | the board resets each quarter, so this becomes a dated achievement rather than a current one | decide whether to defend it in Q4 (costs time) or let it stand | 
 | **WATCHLIST CTF — 4 labs** | low value now that the event context has passed | park it explicitly | 
+| **Infosecurity follow-up — 2 days overdue** | The Next-Gen Infosec pitch went to James Coker on **2026-09-28** (`SENT-browser.log`, id `infosecurity-nextgen-pitch`), and `STATUS.md` calls it *the highest-probability acceptance on the board*. His stated decision date was ~1 October and their review window is a week, and **the follow-up has not been sent**. The body is written and verified at `magazine/FOLLOW-UP-infosecurity.txt` (199 words, greeting through sign-off). **Note the sending tool cannot do this one:** `sendgbrowser.py` composes a new message (`view=cm`), and has no reply/thread support — a grep for `reply`/`In-Reply-To`/`thread_id` finds nothing. The instruction is to **reply in the existing 27 Sep thread**, so this is a manual two-minute action in Gmail, not a queue entry. | **reply in the existing thread** with `magazine/FOLLOW-UP-infosecurity.txt` pasted whole. Do not start a new thread and do not queue it for `sendgbrowser.py`. |
 
 ## The standing decision
 
@@ -154,9 +155,21 @@ Edge-Native_Semantic_Firewall_/docs/supplementary.pdf
   generated by docs/build_supplement.py, so it cannot describe a different revision
 ```
 
-**So this is one upload away from completing a paper that is already "Accept with Revision". It is
-the most certain route to **published** in this entire workspace — more certain than any editor
-pitch, because the acceptance already exists.**
+**This row is out of date, and in the direction that costs an action: the paper is PUBLISHED.**
+The ICICSET 2026 proceedings DOI resolves (checked against Crossref 2026-10-05):
+
+```
+DOI       : 10.65091/icicset.v3i1.75
+type      : journal-article
+container : Proceedings of International Conference on Innovation in Computing, Science,
+            Engineering and Technology (ICICSET)
+issued    : 2026-10-02
+authors   : Sushant Poudel, Rakhee Pandey, Aashika Pandey
+```
+
+The revision round that "Accept with Revision" described is finished — `paper/response_to_reviewers.md` (16.4 KB) and `docs/supplementary.pdf` (9 pages, 495 KB) both exist, and the DOI issued two days after this row was written. **So do not go looking for a supplementary upload field to "complete" it.**
+
+**One thing this row cannot settle, stated rather than assumed:** whether the organisers still want anything through their portal (a copyright form, a final file, a camera-ready re-upload). The DOI proves publication; it does not prove the portal is empty. If a CMT/portal task list is still open, that is a separate two-minute check and it belongs here once known.
 
 ---
 
