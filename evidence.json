@@ -597,6 +597,21 @@
         "expect": "username nofear976, Lvl 81, 98,664 XP, rank Prodigy",
         "note": "Not machine-checkable: HTB exposes no public API for this and the pagerank endpoint needs a session. Read by hand from the account page and recorded with the misread that preceded it."
       }
+    },
+    {
+      "id": "tool-toolgate",
+      "category": "open-source",
+      "claim": "toolgate - audit an MCP server's tool declarations before connecting, in Rust, built so it cannot report clean on input it could not read",
+      "detail": "Three checks: confusable tool names (Cyrillic and Greek look-alikes folding to the same skeleton as a Latin name, so a policy written against one silently matches the other), Unicode tag-block and zero-width characters in a name or description (invisible to a reader, fully present in the model's context), and state-changing tools with no annotations.readOnlyHint. Ordinary naming variation such as readFile versus read_file is graded Medium rather than Critical, because grading both Critical makes the tool useless on any normal codebase. Fail-closed: exit 2 for input it cannot read or parse, never 0. Six tests; one exists because the first version graded readFile versus read_file as a hostile act. CI runs fmt, clippy with warnings as errors, the tests, and two guards - one asserting the checker exits non-zero on unparseable input, the other building a server with all three defects and failing if any check stops firing. A single static binary, one dependency, MIT.",
+      "source": {
+        "kind": "public_repo",
+        "url": "https://github.com/sushant-me/toolgate",
+        "language": "Rust"
+      },
+      "verification": {
+        "method": "public_repo_exists",
+        "expect": null
+      }
     }
   ]
 }
