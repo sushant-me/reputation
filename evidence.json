@@ -528,8 +528,8 @@
         "method": "github_issue",
         "url": "https://github.com/google/osv-scanner/issues/3120",
         "checked": "2026-10-01",
-        "expect": "state == open",
-        "note": "issue exists, is open, and was verified live (HTTP 200) after filing"
+        "expect": "filed && closed-as-completed",
+        "note": "Filed 2026-09-30, CLOSED as COMPLETED 2026-10-01T01:20:33Z (live check 2026-10-05). The earlier expectation 'state == open' was true when written and expired the same day: the maintainer replied 'what you have pointed out is true' and fixed it. The durable facts are that the issue was filed, acknowledged and completed - not that it is open."
       },
       "id": "osv_scanner_3120_name_is_regex",
       "category": "upstream_contribution"
@@ -558,7 +558,7 @@
       "category": "upstream_contribution"
     },
     {
-      "claim": "A pull request opened upstream in google/adk-go that re-enables a test which had never executed: TestRunNode_ErrInvalidRunNodeContext_OnStaticContext was disabled by a bare t.Skip(), and the documented ErrInvalidRunNodeContext contract of RunNode therefore had no executing test",
+      "claim": "A pull request MERGED upstream in google/adk-go that re-enables a test which had never executed: TestRunNode_ErrInvalidRunNodeContext_OnStaticContext was disabled by a bare t.Skip(), and the documented ErrInvalidRunNodeContext contract of RunNode therefore had no executing test",
       "source": {
         "kind": "github_pull_request",
         "url": "https://github.com/google/adk-go/pull/1679",
@@ -576,8 +576,8 @@
         "method": "github_pr_open_or_merged",
         "url": "https://github.com/google/adk-go/pull/1679",
         "checked": "2026-10-01",
-        "expect": "state == open",
-        "note": "live check: the API reports state=open, mergeable=True, commits=1, +0/-1, author=sushant-me. **The claim is that a PR is OPEN, not merged; if it is closed unmerged the claim becomes false and must be corrected.**"
+        "expect": "merged",
+        "note": "MERGED 2026-10-01T06:52:36Z by wolo-lab (live check 2026-10-05). The earlier expectation 'state == open' contradicted this claim's own method, github_pr_open_or_merged, which already allowed a merge. The former note said 'it is OPEN, not merged; ~70% merge confidence' - correct when written and superseded within hours. This is now a MERGED pull request into google/adk-go, which is a stronger fact than the one recorded."
       },
       "id": "adk_go_pr_1679_re_enabled_test",
       "category": "upstream_contribution"
