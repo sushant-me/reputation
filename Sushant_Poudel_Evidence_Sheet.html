@@ -76,6 +76,31 @@
       <td class="where"><a href="https://github.com/google/go-github/pull/4556">#4556</a> (merged 2026-09-17) · <a href="https://github.com/google/go-github/pull/4564">#4564</a></td>
     </tr>
     <tr>
+      <td class="what"><span class="num">A defect filed in <code>google/osv-scanner</code></span> &mdash;
+        <code>nameIsRegex</code> overrides are documented as anchored to the full package name
+        (<code>^pattern$</code>), but the pattern is compiled by string concatenation, so a top-level
+        alternation escapes the anchors and the override silently drops packages from the scan.
+        <i>Confidence is high and the limits are stated: the contract is in the docs and restated in the
+        introducing PR, and the existing test covers only the non-alternation case. No CVE or severity is
+        claimed &mdash; the downstream vulnerability-suppression effect was not observed.</i></td>
+      <td class="where"><a href="https://github.com/google/osv-scanner/issues/3120">#3120</a>
+        (filed 2026-09-30, <b>closed as completed 2026-10-01</b> &mdash; the maintainer confirmed the defect and fixed it) &nbsp;·&nbsp;
+        <a href="https://github.com/google/osv-scanner/blob/main/internal/config/config.go">internal/config/config.go</a></td>
+    </tr>
+    <tr>
+      <td class="what"><span class="num">A heap-buffer-overflow write filed in <code>libpng</code></span> &mdash;
+        <code>png_set_quantize()</code> allocates an owned palette of <code>PNG_MAX_PALETTE_LENGTH</code>
+        (256) entries but <code>memcpy()</code>s <code>num_palette</code> entries into it; the only bound is
+        <code>maximum_colors</code>, applied only above it. The sibling <code>png_set_PLTE()</code> rejects
+        &gt;256. Introduced by the owned-copy change that fixed CVE-2026-33416. AddressSanitizer confirms a
+        write of 900 bytes past a 768-byte region on both 1.6.60 and 1.8.0 &mdash; read in the source, not
+        taken on trust. <i>Stated limits: NOT reachable from crafted PNG bytes; caller-triggered; no CVE or
+        severity claimed.</i></td>
+      <td class="where"><a href="https://github.com/pnggroup/libpng/issues/935">#935</a>
+        (filed 2026-09-30, <b>closed as completed 2026-10-01</b> &mdash; the maintainer confirmed the defect and fixed it) &nbsp;·&nbsp;
+        <a href="https://github.com/pnggroup/libpng/blob/libpng18/pngrtran.c">pngrtran.c</a></td>
+    </tr>
+    <tr>
       <td class="what"><span class="num">Five memory-safety issues in <code>google/s2geometry</code></span> —
         NULL dereference on the documented traversal path, out-of-bounds read, 16 GiB allocation from a
         117-byte input, and a <b>2.4 GiB allocation reachable from a 28-byte input</b>. Each filed with a
