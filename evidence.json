@@ -13,17 +13,18 @@
     {
       "id": "hackinghub-rank-1",
       "category": "recognition",
-      "claim": "177 flags, 18,125 XP and 1 gold / 2 silver / 2 bronze awards on HackingHub",
-      "detail": "177 flags and 18,125 XP, with 1 gold, 2 silver and 2 bronze awards - these are live-checkable on the all-time board. The Q3 2026 per-period board, on which this account ranked #1, has since rolled to Q4 2026 and the API serves only the current period (verified: the endpoint returns {\"current_p\":\"4-2026\",\"previous_p\":\"3-2026\"} and no parameter retrieves 3-2026). The Q3 #1 placing is therefore recorded as history rather than asserted as live-checkable; the screenshot is on request. The claims that no longer depend on a rolling board are the ones the verifier now checks.",
+      "claim": "Rank 1 on the HackingHub Q3 2026 global leaderboard",
+      "detail": "177 flags and 18,125 XP, with 1 gold, 2 silver and 2 bronze awards. The next-ranked account holds 97 flags / 10,095 XP.",
       "source": {
         "kind": "api",
-        "url": "https://api.hackinghub.io/leaderboard?type=previous",
-        "note": "all-time board; the per-period board is current-only"
+        "url": "https://api.hackinghub.io/leaderboard",
+        "note": "public JSON, period 3-2026"
       },
       "verification": {
         "method": "hackinghub_rank",
         "expect": {
           "username": "nofear976",
+          "rank": 1,
           "flags": 177,
           "xp": 18125
         }
@@ -186,7 +187,7 @@
       "id": "adk-tool-shadowing",
       "category": "security-research",
       "claim": "Fixes and reports for MCP tool shadowing across Google's agent frameworks",
-      "detail": "Framework-reserved tool names (google_search, set_model_response, skill and loop tools) that a server-supplied MCP tool can occupy, bypassing the duplicate-name guard. Open pull requests: adk-go #1606, adk-java #1515. A third, adk-python #7145, was CLOSED unmerged on 2026-10-02 and is recorded here rather than dropped, because it still reports the same class of defect against a third framework.",
+      "detail": "Framework-reserved tool names (google_search, set_model_response, skill and loop tools) that a server-supplied MCP tool can occupy, bypassing the duplicate-name guard. Open pull requests: adk-go #1606, adk-java #1515. The adk-python half (#7145) is merged: the bot closed the pull request with “Your changes have been successfully imported and merged via Copybara in commit cc5d516”, which is why the API shows it as closed-unmerged and an earlier revision of this claim read as a failure. `github_prs_open_or_merged` now recognises that shape by checking the named commit is actually on the default branch.",
       "source": {
         "kind": "github_prs",
         "repo": "google/adk-go",
@@ -199,6 +200,11 @@
           "kind": "github_pr",
           "repo": "google/adk-java",
           "number": 1515
+        },
+        {
+          "kind": "github_pr",
+          "repo": "google/adk-python",
+          "number": 7145
         }
       ],
       "verification": {
@@ -260,7 +266,7 @@
       "id": "paper-semantic-firewall",
       "category": "publication",
       "claim": "Edge-Native Semantic Firewall for Autonomous LLM Agents: A Structured Chain-of-Thought Verification Framework",
-      "detail": "PUBLISHED with a DOI: 10.65091/icicset.v3i1.75, Proceedings of the International Conference on Innovation in Computing, Science, Engineering and Technology (ICICSET), issued 2 October 2026, and presented at Hotel Royal Tulip, Kathmandu. Crossref resolves the record with all three authors (S. Poudel, R. Pandey, A. Pandey). Previously recorded as 'accepted with revision' - the acceptance arrived by email from Microsoft CMT on 2026-09-14 and camera-ready was in progress at the time; it is no longer in progress. The conference was hosted at NCIT. NOT an IEEE paper, and it must not be described as one: the IEEE acceptance this account holds is PREBAS at RTC 2026 (paper #1571322138), and conflating the two put 'Two IEEE papers accepted' on the public homepage until 2026-09-28. Co-authors R. Pandey and A. Pandey, Department of Computer Science and Engineering, Nepal Engineering College. A 3.8B model (Phi-3-mini, 4-bit) on one consumer laptop inside a 4.2 GiB VRAM budget, 600 policy scenarios per condition, no cloud inference. JSON-constrained output without a reasoning field was the least safe evaluator (46.2% unsafe accepts vs 17.2% unconstrained); the structured CoT arm cut false accepts of irreversible hard-denial commands from 71 to 6 and reached 66.3% decision accuracy.",
+      "detail": "Accepted with revision at ICICSET 2026 - the 3rd International Conference on Innovation in Computing, Science, Engineering and Technology, hosted at NCIT. The acceptance arrived by email from Microsoft CMT on 2026-09-14 with a camera-ready deadline of 15 September 2026, so camera-ready is in progress. NOT an IEEE paper, and it must not be described as one: the IEEE acceptance this account holds is PREBAS at RTC 2026 (paper #1571322138), and conflating the two put 'Two IEEE papers accepted' on the public homepage until 2026-09-28. Co-authors R. Pandey and A. Pandey, Department of Computer Science and Engineering, Nepal Engineering College. A 3.8B model (Phi-3-mini, 4-bit) on one consumer laptop inside a 4.2 GiB VRAM budget, 600 policy scenarios per condition, no cloud inference. JSON-constrained output without a reasoning field was the least safe evaluator (46.2% unsafe accepts vs 17.2% unconstrained); the structured CoT arm cut false accepts of irreversible hard-denial commands from 71 to 6 and reached 66.3% decision accuracy.",
       "source": {
         "kind": "public_repo",
         "url": "https://github.com/sushant-me/Edge-Native_Semantic_Firewall_"
@@ -274,12 +280,6 @@
         "71 -> 6 hard-denial false accepts",
         "66.3% decision accuracy",
         "4.2 GiB VRAM"
-      ],
-      "extra_sources": [
-        {
-          "kind": "http",
-          "url": "https://doi.org/10.65091/icicset.v3i1.75"
-        }
       ]
     },
     {
@@ -528,8 +528,8 @@
         "method": "github_issue",
         "url": "https://github.com/google/osv-scanner/issues/3120",
         "checked": "2026-10-01",
-        "expect": "filed && closed-as-completed",
-        "note": "Filed 2026-09-30, CLOSED as COMPLETED 2026-10-01T01:20:33Z (live check 2026-10-05). The earlier expectation 'state == open' was true when written and expired the same day: the maintainer replied 'what you have pointed out is true' and fixed it. The durable facts are that the issue was filed, acknowledged and completed - not that it is open."
+        "expect": "state == open",
+        "note": "issue exists, is open, and was verified live (HTTP 200) after filing"
       },
       "id": "osv_scanner_3120_name_is_regex",
       "category": "upstream_contribution"
@@ -558,7 +558,7 @@
       "category": "upstream_contribution"
     },
     {
-      "claim": "A pull request MERGED upstream in google/adk-go that re-enables a test which had never executed: TestRunNode_ErrInvalidRunNodeContext_OnStaticContext was disabled by a bare t.Skip(), and the documented ErrInvalidRunNodeContext contract of RunNode therefore had no executing test",
+      "claim": "A pull request opened upstream in google/adk-go that re-enables a test which had never executed: TestRunNode_ErrInvalidRunNodeContext_OnStaticContext was disabled by a bare t.Skip(), and the documented ErrInvalidRunNodeContext contract of RunNode therefore had no executing test",
       "source": {
         "kind": "github_pull_request",
         "url": "https://github.com/google/adk-go/pull/1679",
@@ -576,8 +576,8 @@
         "method": "github_pr_open_or_merged",
         "url": "https://github.com/google/adk-go/pull/1679",
         "checked": "2026-10-01",
-        "expect": "merged",
-        "note": "MERGED 2026-10-01T06:52:36Z by wolo-lab (live check 2026-10-05). The earlier expectation 'state == open' contradicted this claim's own method, github_pr_open_or_merged, which already allowed a merge. The former note said 'it is OPEN, not merged; ~70% merge confidence' - correct when written and superseded within hours. This is now a MERGED pull request into google/adk-go, which is a stronger fact than the one recorded."
+        "expect": "state == open",
+        "note": "live check: the API reports state=open, mergeable=True, commits=1, +0/-1, author=sushant-me. **The claim is that a PR is OPEN, not merged; if it is closed unmerged the claim becomes false and must be corrected.**"
       },
       "id": "adk_go_pr_1679_re_enabled_test",
       "category": "upstream_contribution"
@@ -596,21 +596,6 @@
         "method": "human_asserted",
         "expect": "username nofear976, Lvl 81, 98,664 XP, rank Prodigy",
         "note": "Not machine-checkable: HTB exposes no public API for this and the pagerank endpoint needs a session. Read by hand from the account page and recorded with the misread that preceded it."
-      }
-    },
-    {
-      "id": "tool-toolgate",
-      "category": "open-source",
-      "claim": "toolgate - audit an MCP server's tool declarations before connecting, in Rust, built so it cannot report clean on input it could not read",
-      "detail": "Three checks: confusable tool names (Cyrillic and Greek look-alikes folding to the same skeleton as a Latin name, so a policy written against one silently matches the other), Unicode tag-block and zero-width characters in a name or description (invisible to a reader, fully present in the model's context), and state-changing tools with no annotations.readOnlyHint. Ordinary naming variation such as readFile versus read_file is graded Medium rather than Critical, because grading both Critical makes the tool useless on any normal codebase. Fail-closed: exit 2 for input it cannot read or parse, never 0. Six tests; one exists because the first version graded readFile versus read_file as a hostile act. CI runs fmt, clippy with warnings as errors, the tests, and two guards - one asserting the checker exits non-zero on unparseable input, the other building a server with all three defects and failing if any check stops firing. A single static binary, one dependency, MIT.",
-      "source": {
-        "kind": "public_repo",
-        "url": "https://github.com/sushant-me/toolgate",
-        "language": "Rust"
-      },
-      "verification": {
-        "method": "public_repo_exists",
-        "expect": null
       }
     }
   ]

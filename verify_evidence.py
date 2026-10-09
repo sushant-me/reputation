@@ -115,6 +115,44 @@ def _pr(repo: str, number: int) -> dict | None:
     return gh_api(f"repos/{repo}/pulls/{number}")
 
 
+def _comments(repo: str, number: int) -> list[dict]:
+    """Issue comments on a pull request, or an empty list if unreadable."""
+    payload = gh_api(f"repos/{repo}/issues/{number}/comments")
+    return payload if isinstance(payload, list) else []
+
+
+def _default_branch(repo: str) -> str:
+    meta = gh_api(f"repos/{repo}")
+    if isinstance(meta, dict):
+        return meta.get("default_branch") or "main"
+    return "main"
+
+
+def _commit_on_default_branch(repo: str, sha: str) -> bool:
+    """True when `sha` is reachable from the repo's default branch.
+
+    A Copybara import is only accepted as a merge if the commit it names is
+    actually on the branch -- a sha printed in a comment proves nothing by
+    itself, and this check is what keeps the exemption from becoming a way to
+    launder a closed PR into a pass.
+    """
+    for branch in (_default_branch(repo),):
+        result = gh_api(f"repos/{repo}/commits/{sha}")
+        if not isinstance(result, dict):
+            continue
+        parents = result.get("parents") or []
+        # The commit must exist *and* be on the branch: ask the branch for it.
+        on_branch = gh_api(f"repos/{repo}/commits?sha={branch}&per_page=1")
+        if isinstance(on_branch, list) or parents:
+            compare = gh_api(f"repos/{repo}/compare/{branch}...{sha}")
+            if isinstance(compare, dict) and compare.get("status") in (
+                "behind",
+                "identical",
+            ):
+                return True
+    return False
+
+
 def check_github_pr_merged(claim: dict) -> tuple[str, str]:
     source = claim["source"]
     pr = _pr(source["repo"], source["number"])
@@ -227,6 +265,32 @@ def check_github_pr_superseded_credit_in_authors(claim: dict) -> tuple[str, str]
     )
 
 
+def _copybara_merge_commit(pr: dict, repo: str) -> str | None:
+    """Returns the commit sha a closed PR was imported under, if a bot said so.
+
+    Google's repositories land outside contributions through Copybara, which
+    imports the diff and closes the pull request *without* setting `merged`.
+    On the API that is indistinguishable from a rejected PR: `state` is
+    `closed` and `merged` is `false`. The only signal is the bot comment
+    ("successfully imported and merged via Copybara in commit <sha>"), so trust
+    it only after checking that the sha really is on the default branch.
+    """
+    number = pr.get("number")
+    if number is None:
+        return None
+    for comment in _comments(repo, number):
+        body = comment.get("body") or ""
+        if "copybara" not in body.lower():
+            continue
+        found = re.search(r"\bcommit\s+([0-9a-f]{7,40})\b", body, re.IGNORECASE)
+        if not found:
+            continue
+        sha = found.group(1)
+        if _commit_on_default_branch(repo, sha):
+            return sha
+    return None
+
+
 def check_github_pr_open_or_merged(claim: dict) -> tuple[str, str]:
     source = claim["source"]
     pr = _pr(source["repo"], source["number"])
@@ -236,6 +300,9 @@ def check_github_pr_open_or_merged(claim: dict) -> tuple[str, str]:
         return PASS, f"merged (was {pr['state']})"
     if pr.get("state") == "open":
         return PASS, "open"
+    sha = _copybara_merge_commit(pr, source["repo"])
+    if sha:
+        return PASS, f"merged via Copybara as {sha[:9]} (was {pr['state']})"
     return FAIL, f"closed unmerged: {source['repo']}#{source['number']}"
 
 
@@ -253,10 +320,21 @@ def check_github_prs_open_or_merged(claim: dict) -> tuple[str, str]:
         if pr is None:
             failures.append(f"{repo}#{number} unreadable")
             continue
-        state = "merged" if pr.get("merged") else pr.get("state")
-        if state not in ("open", "merged"):
-            failures.append(f"{repo}#{number} {state}")
-        notes.append(f"{repo.split('/')[-1]}#{number} {state}")
+        short = f"{repo.split('/')[-1]}#{number}"
+        if pr.get("merged"):
+            notes.append(f"{short} merged")
+            continue
+        state = pr.get("state")
+        if state == "open":
+            notes.append(f"{short} open")
+            continue
+        # Closed without `merged`: either genuinely rejected, or imported through
+        # Copybara. Only the latter counts, and only with the sha on the branch.
+        sha = _copybara_merge_commit(pr, repo)
+        if sha:
+            notes.append(f"{short} merged via Copybara as {sha[:9]}")
+        else:
+            failures.append(f"{short} {state}")
     if failures:
         return FAIL, "; ".join(failures)
     return PASS, ", ".join(notes)
