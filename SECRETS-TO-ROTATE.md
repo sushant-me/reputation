@@ -1,14 +1,30 @@
-# Three live credentials are public right now — rotate them
+# Two live credentials are public right now — rotate them
 
 *Found 2026-09-28 by `reputation/check_secrets.py` (80 owned public repositories,
 1,092 files read), then confirmed by hand. All three repositories are PUBLIC and
 the files are readable without authentication.*
 
+**Status re-checked 2026-10-09 — one of the three is closed, two are not.** Fetching
+each URL again, unauthenticated:
+
+| # | Repository | File | HTTP | State |
+|---|---|---|---|---|
+| 1 | `sushant-me/nec-campus-app` | `android/app/google-services.json` | **404** | **removed** — the file is gone from `main` and `master` on the one repository that was not archived, which was the urgent one |
+| 2 | `sushant-me/user-screen-test` | `android/app/google-services.json` | **200** | **still exposed** — archived, so the blob cannot be removed from the repository |
+| 3 | `sushant-me/weather-` | `script.js` | **200** | **still exposed** — archived, so the blob cannot be removed from the repository |
+
+The two that remain are both ARCHIVED, which is the whole reason deleting is not the
+fix: the repositories are read-only, so the file cannot be removed from them at all,
+and even if it could the blob would still be in the history, the fork network and the
+raw CDN. **For these two the only action left is rotation.** An archived repository
+holding a live credential is not a smaller problem than an active one — it is a
+permanent one.
+
 ---
 
 ## What is exposed
 
-### 1. Google API key — `sushant-me/nec-campus-app` ← the urgent one
+### 1. Google API key — `sushant-me/nec-campus-app` — CLOSED 2026-10-09
 
 | | |
 |---|---|
