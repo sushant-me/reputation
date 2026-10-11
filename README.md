@@ -21,7 +21,7 @@ on-request  PREBAS accepted, 2026 IEEE RTC (Chicago)                  acceptance
 Run it yourself:
 
 ```bash
-python3 verify_evidence.py            # 23 claims: 19 checked live, 4 on request
+python3 verify_evidence.py            # prints the live count itself; see the note below
 python3 verify_evidence.py --json     # same, machine-readable
 python3 check_surfaces.py             # the pages a reader reaches
 python3 check_surfaces.py --require-all   # ...including the CVs and job-kit, on the workstation
@@ -29,6 +29,13 @@ python3 check_links.py                # every external link on those pages still
 python3 check_secrets.py --self-test  # the credential detector fires on a known leak
 python3 check_secrets.py              # ...then scans every owned repository
 ```
+
+**The claim count is deliberately not written down here.** This comment used to
+restate the totals, and by 2026-10-11 it was out of date on two of them. A number
+duplicated into prose is a claim nothing re-checks, so `verify_evidence.py` prints
+the counts on every run and `check_surfaces.py` asserts them against the corpus —
+the check that caught this paragraph the first time it was written. That is the
+same rule the repository applies to every other claim, turned on itself.
 
 The maintainer row is checked by looking for their own words in their own
 comment — the `named_person_said` method in `evidence.json`. An endorsement
