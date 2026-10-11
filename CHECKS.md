@@ -36,6 +36,28 @@ is the thing that is verified — and editing the comment takes the claim down w
 it.** That is deliberate: a screenshot of praise is not verifiable, and a link to the
 sentence is.
 
+**What each source kind actually proves, and what it does not.** The methods are
+narrower than the claims they support, and the boundary is worth stating:
+
+| method | proves | does not prove |
+|---|---|---|
+| `github_issues_open` | the issues exist, are open, and any quoted phrase is still in the body | **who filed them, or why** |
+| `github_pr_comment` | the comment exists, is by the named person, and still contains the quoted words | that the person endorses more than the quoted words |
+| `url_live` | the page resolves and contains the named string | anything about the page beyond that string |
+| `named_person_said` | the words are in that person's own comment | that they meant them as endorsement of the whole claim |
+
+**One worked example, because the distinction is easy to miss.** A claim records that
+three tracked issues were filed from an audit. The issues exist, are open, and are
+traceable to their repository — **but they were opened by the maintainer, not by me.**
+**The source verifies that the issues are real; it does not verify authorship, and it
+cannot distinguish "filed from an audit" from "filed by me".** The wording is accurate
+and the check is accurate; they simply cover different things, and a reader deserves to
+know which part is machine-verified.
+
+**That is not a defect in the checks — it is the reason `required` rules sit beside
+`forbidden` ones.** A check has a scope, and the honest thing is to write the scope
+down rather than let a passing check imply it covers more than it does.
+
 ## Layer 2 — `check_surfaces.py`
 
 **Why it exists.** `verify_evidence.py` checks claims. It did not notice three
