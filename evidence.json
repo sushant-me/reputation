@@ -39,7 +39,7 @@
       "id": "go-github-merged",
       "category": "open-source",
       "claim": "Security fix authored, merged, then generalised into google/go-github, with the credit since recorded in the project's AUTHORS file",
-      "detail": "I authored #4556, which was merged by maintainer gmlewis on 2026-09-17: an upload whose URL pointed at a different host than the configured upload host was refused rather than sent with the client's credentials. He reverted it the next day in favour of his broader #4564, which now enforces the general rule in master ('credentials are sent only to configured origins', via AllowedOrigins in github/github.go) and which carries the commit 'Address feedback from sushant-me'.\n\nThe Co-authored-by trailer never appeared. On 2026-09-20 the maintainer offered a different mechanism that fits the repository's squash-merge policy: the contributor opens a PR adding themselves to AUTHORS and records the work in its description. I opened google/go-github#4579, and he merged it the same day (2026-09-20T17:11:32Z, merge commit 5493527). 'Sushant Poudel <sushant.poudel2028@gmail.com>' is in AUTHORS on master.\n\nThe check asserted only the negative until the credit landed: it failed if a Co-authored-by trailer appeared, which was the right instinct for a claim of something still owed. The credit instead arrived through the AUTHORS-file route the maintainer offered, which the original check never looked at, so it kept passing while the claim underneath it had become an understatement. It now reads AUTHORS on master and asserts the entry is present.",
+      "detail": "I authored #4556, which was merged by maintainer gmlewis on 2026-09-17: an upload whose URL pointed at a different host than the configured upload host was refused rather than sent with the client's credentials. He reverted it the next day in favour of his broader #4564, which now enforces the general rule in master ('credentials are sent only to configured origins', via AllowedOrigins in github/github.go) and which carries the commit 'Address feedback from sushant-me'.\n\nThe Co-authored-by trailer never appeared. On 2026-09-20 the maintainer offered a different mechanism that fits the repository's squash-merge policy: the contributor opens a PR adding themselves to AUTHORS and records the work in its description. I opened google/go-github#4579, and he merged it the same day (2026-09-20T17:11:32Z, merge commit 5493527). 'Sushant Poudel <sushant.poudel2028@gmail.com>' is in AUTHORS on master.\n\nThe check asserted only the negative until the credit landed: it failed if a Co-authored-by trailer appeared, which was the right instinct for a claim of something still owed. The credit instead arrived through the AUTHORS-file route the maintainer offered, which the original check never looked at, so it kept passing while the claim underneath it had become an understatement. It now reads AUTHORS on master and asserts the entry is present.\n\nThe credit then travelled further than this claim described. go-github v93.0.0, published 2026-10-15, names me in its release notes alongside the #4564 breaking change. The check caught that as a failure rather than a pass, because its release and commit probes ran ahead of the AUTHORS read and fired on a claim that already asserted the landed state - a rewrite it could not be satisfied by making. The probes now run second, so the asserted fact decides and the extra routes are reported: PASS reads 'Sushant Poudel is in the AUTHORS file on master (via PR #4579), and release v93.0.0 credits me in its notes'.",
       "source": {
         "kind": "github_pr",
         "url": "https://github.com/google/go-github/pull/4556",
@@ -70,7 +70,8 @@
       "metrics": [
         "merged 2026-09-17, superseded 2026-09-18",
         "replacement in master",
-        "credit landed 2026-09-20, Sushant Poudel in AUTHORS (PR #4579)"
+        "credit landed 2026-09-20, Sushant Poudel in AUTHORS (PR #4579)",
+        "release v93.0.0 published 2026-10-15 credits me in its notes"
       ],
       "authors_pr": {
         "repo": "google/go-github",
@@ -187,7 +188,7 @@
       "id": "adk-tool-shadowing",
       "category": "security-research",
       "claim": "Fixes and reports for MCP tool shadowing across Google's agent frameworks",
-      "detail": "Framework-reserved tool names (google_search, set_model_response, skill and loop tools) that a server-supplied MCP tool can occupy, bypassing the duplicate-name guard. Open pull requests: adk-go #1606, adk-java #1515. The adk-python half (#7145) is merged: the bot closed the pull request with “Your changes have been successfully imported and merged via Copybara in commit cc5d516”, which is why the API shows it as closed-unmerged and an earlier revision of this claim read as a failure. `github_prs_open_or_merged` now recognises that shape by checking the named commit is actually on the default branch.",
+      "detail": "Framework-reserved tool names (google_search, set_model_response, skill and loop tools) that a server-supplied MCP tool can occupy, bypassing the duplicate-name guard. Open pull request: adk-go #1606, which narrows the withheld set to the three adk_request_* names the framework never registers and lets a framework dispatch name beat a colliding tool instead of failing the run. The adk-python half (#7145) is merged: the bot closed the pull request with “Your changes have been successfully imported and merged via Copybara in commit cc5d516”, which is why the API shows it as closed-unmerged, and `github_prs_open_or_merged` recognises that shape by checking the named commit is actually on the default branch. The adk-java half was closed unmerged by the maintainer — kvmilos closed #1515 so the in-model built-in collision behaviour stays as-is, for consistency with the other ADKs and backward compatibility — so it is deliberately not asserted here. What remains live on the Java side is the still-open issue adk-java #1513, which reports that a server-supplied tool named like one of ADK's framework tools (set_model_response, transfer_to_agent, adk_request_confirmation, adk_request_credential, adk_request_input) makes the run fail with “Duplicate tool name”. It is named here rather than raised to its own machine-checked claim because every claim added to `evidence.json` moves the live and total counts that seven published surfaces quote, one of which is the deployed site; the issue is tracked in OPEN-LOOPS.md instead.",
       "source": {
         "kind": "github_prs",
         "repo": "google/adk-go",
@@ -196,11 +197,6 @@
         ]
       },
       "extra_sources": [
-        {
-          "kind": "github_pr",
-          "repo": "google/adk-java",
-          "number": 1515
-        },
         {
           "kind": "github_pr",
           "repo": "google/adk-python",

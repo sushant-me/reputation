@@ -56,9 +56,12 @@ the difference is that it is written down.
 | loop | state | next action | when |
 |---|---|---|---|
 | s2geometry **#681**, **#682** | open, all checks pass; the *new* CI runs need a Google maintainer to approve them | if nothing moves, one short polite comment on #682 | 7 days |
-| adk-go **#1606**, adk-java **#1515**, adk-python **#7145** | open, awaiting review; the red checks are fork-PR gating, not code | leave them; reply only if a maintainer replies | — |
+| adk-go **#1606** | open, awaiting review; the red checks are fork-PR gating, not code. Narrowed to the three `adk_request_*` names the framework never registers, plus a framework dispatch name now beating a colliding tool rather than failing the run | leave it; reply only if a maintainer replies | — |
+| adk-java **#1515** | **closed unmerged** by the maintainer on 2026-10-14 — the in-model built-in collision behaviour stays as-is, for cross-ADK consistency and backward compatibility | nothing to do; the closed PR is no longer claimed anywhere | done |
+| adk-java **#1513** | open issue, the live half of the Java work: a server tool named like one of ADK's framework tools makes the run fail with "Duplicate tool name" | named in `evidence.json`'s adk-tool-shadowing detail rather than as its own claim, because a new claim moves counts seven published surfaces quote | — |
+| adk-python **#7145** | **merged via Copybara** in `cc5d516`; the API shows closed-unmerged, which is that route's normal shape | nothing to do | done |
 | libphonenumber **#4079**, gson **#3121** | open, no reviewer yet | leave them | — |
-| go-github **#4556** → **#4564** | merged, then superseded; **#4564 is in master** and carries the commit *"Address feedback from sushant-me"* | **Commented on #4366 on 2026-09-20** ([comment](https://github.com/google/go-github/issues/4366#issuecomment-5747072339)) asking once for the `Co-authored-by` trailer he offered, with an easy out. Nothing further to do — do **not** follow up again. If the trailer lands, `verify_evidence.py` goes red on purpose and the claim gets upgraded | waiting; no action |
+| go-github **#4556** → **#4564** | merged, then superseded; **#4564 is in master**, and the credit has now **landed twice** — `Sushant Poudel` is in `AUTHORS` (via #4579) and **v93.0.0, published 2026-10-15, names me in its release notes** | nothing further, and do **not** follow up on #4366. `verify_evidence.py`'s release probe used to run before the AUTHORS read and demand a rewrite that could not satisfy it; it now reads the asserted fact first and reports both routes | done; claim upgraded |
 
 ## Yours to do, with a date
 

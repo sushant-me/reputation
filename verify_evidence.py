@@ -176,7 +176,8 @@ def check_github_pr_superseded_credit_in_authors(claim: dict) -> tuple[str, str]
       2. #4564 is merged, and master implements the replacement (`AllowedOrigins`);
       3. the maintainer's co-author promise is public, at the source;
       4. the promised credit has landed — in the AUTHORS file, via the mechanism
-         the maintainer offered after the trailer route fell through.
+         the maintainer offered after the trailer route fell through, and since
+         2026-10-15 in go-github v93.0.0's release notes as well.
 
     (4) used to be the opposite fact, and this function was named for it. It
     asserted that the credit had *not* landed, on the reasoning that a claim of
@@ -227,38 +228,58 @@ def check_github_pr_superseded_credit_in_authors(claim: dict) -> tuple[str, str]
             "either it was edited or this check looks in the wrong place"
         )
 
-    # The negative half.
-    merge = gh_api(f"repos/{repo}/commits/{replacement['merge_commit_sha']}")
-    message = ((merge or {}).get("commit") or {}).get("message", "")
-    if "sushant" in message.lower():
-        return FAIL, (
-            "the promised co-author credit has LANDED in the merged commit — "
-            "rewrite this claim, it now understates"
-        )
-    for release in gh_api(f"repos/{repo}/releases") or []:
-        if "sushant" in (release.get("body") or "").lower():
-            return FAIL, (
-                f"release {release.get('tag_name')} now credits me — rewrite this claim, "
-                "it now understates"
-            )
-
-    # The credit landed by a third route the first version of this check did not look at: the
-    # maintainer offered the AUTHORS-file mechanism, the contributor opened the PR, and it was
-    # merged. Checking only for a Co-authored-by trailer would now report "not yet credited" on
-    # a claim that is out of date in the other direction - understating instead of overstating,
-    # which is still wrong.
-    authors_entry = None
+    # Where the credit stands, read first. The AUTHORS route is the mechanism this
+    # claim asserts, so it decides the verdict; the other two routes are then
+    # reported as additional credit rather than treated as a contradiction.
+    #
+    # Order matters here and was wrong. The release and commit probes were written to
+    # catch a claim gone stale in the understating direction, and they ran ahead of
+    # the AUTHORS read. Once go-github's v93.0.0 notes also credited me they fired on
+    # a claim that already asserted the landed state, so the function demanded a
+    # rewrite that could not make it pass. Reading the asserted fact first fixes the
+    # direction: an unasserted credit is still a failure, an asserted one is a pass
+    # with the extra routes named.
     contents = gh_api(f"repos/{repo}/contents/AUTHORS")
+    authors_entry = False
     if contents and contents.get("content"):
         import base64 as _b64
         authors_entry = "sushant poudel" in _b64.b64decode(contents["content"]).decode(
             "utf-8", "replace").lower()
+
+    merge = gh_api(f"repos/{repo}/commits/{replacement['merge_commit_sha']}")
+    message = ((merge or {}).get("commit") or {}).get("message", "")
+    commit_credits = "sushant" in message.lower()
+    release_tags = [
+        release.get("tag_name")
+        for release in gh_api(f"repos/{repo}/releases") or []
+        if "sushant" in (release.get("body") or "").lower()
+    ]
+
     if authors_entry:
-        return PASS, (
+        note = (
             f"#{mine} merged {str(pr.get('merged_at'))[:10]} then superseded by #{theirs}; "
             "master has the replacement; and the credit has LANDED - Sushant Poudel is in the "
             f"AUTHORS file on master (via PR #{claim.get('authors_pr', {}).get('number', '?')})"
         )
+        if commit_credits:
+            note += ", and the replacement's commit message names me"
+        if release_tags:
+            note += f", and release {release_tags[0]} credits me in its notes"
+        return PASS, note
+
+    # Not in AUTHORS, so the claim is not yet true. A credit that has landed by one
+    # of the other routes means the claim understates and needs rewriting.
+    if commit_credits:
+        return FAIL, (
+            "the promised co-author credit has LANDED in the merged commit — "
+            "rewrite this claim, it now understates"
+        )
+    if release_tags:
+        return FAIL, (
+            f"release {release_tags[0]} now credits me — rewrite this claim, "
+            "it now understates"
+        )
+
     return PASS, (
         f"#{mine} merged {str(pr.get('merged_at'))[:10]} then superseded by "
         f"#{theirs}; master has the replacement; credit offered, not yet in AUTHORS"
