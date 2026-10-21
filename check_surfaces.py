@@ -301,7 +301,8 @@ REQUIRED: list[tuple[str, str, str]] = [
      "the rule that a finding not read in the source is not a finding stays written down"),
 
     # (file, phrase that must appear, what it protects)
-    ("portfolio/src/app/page.tsx", "one at an IEEE conference",
+    # The homepage moved its stat row into HomeClient.tsx; page.tsx only renders it.
+    ("portfolio/src/app/HomeClient.tsx", "one at an IEEE conference",
      "the PREBAS status stays 'accepted at an IEEE conference', not 'in IEEE Xplore'"),
     ("portfolio/src/app/publications/[slug]/page.tsx", "neither IEEE Xplore nor Crossref",
      "the paper page keeps stating that it is not published yet, with the date checked"),
