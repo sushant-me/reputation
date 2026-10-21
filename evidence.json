@@ -593,6 +593,25 @@
         "expect": "username nofear976, Lvl 81, 98,664 XP, rank Prodigy",
         "note": "Not machine-checkable: HTB exposes no public API for this and the pagerank endpoint needs a session. Read by hand from the account page and recorded with the misread that preceded it."
       }
+    },
+    {
+      "id": "opentelemetry-go-prs",
+      "category": "open-source",
+      "claim": "Three OpenTelemetry Go pull requests are open and mergeable, with the EasyCLA check passing after the CLA was signed",
+      "detail": "#9230 makes OTLP log exporter compression env values case-insensitive; #9231 treats invalid Logs-specific INSECURE values as false; #9232 reports the registered module version from Version(). All three were rebased onto main@e423753 with CHANGELOG conflicts resolved keeping both sides, and each reports EasyCLA success ('You are authorized to contribute'); the only remaining gate is REVIEW_REQUIRED.",
+      "source": {
+        "kind": "github_prs",
+        "repo": "open-telemetry/opentelemetry-go",
+        "numbers": [
+          9230,
+          9231,
+          9232
+        ]
+      },
+      "verification": {
+        "method": "github_prs_open_or_merged",
+        "expect": "all three PRs readable and open or merged"
+      }
     }
   ]
 }
