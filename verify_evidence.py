@@ -173,7 +173,7 @@ def check_github_pr_superseded_credit_in_authors(claim: dict) -> tuple[str, str]
     checks the code would find the check gone. So all four are checked:
 
       1. #4556 is merged and authored by me;
-      2. #4564 is merged, and master implements the replacement (`AllowedOrigins`);
+      2. #4564 is merged, and master implements the replacement (`sameOrigin`);
       3. the maintainer's co-author promise is public, at the source;
       4. the promised credit has landed — in the AUTHORS file, via the mechanism
          the maintainer offered after the trailer route fell through, and since

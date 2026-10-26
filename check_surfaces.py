@@ -342,7 +342,11 @@ REQUIRED: list[tuple[str, str, str]] = [
     # size that no assertion guards is a claim that regresses silently.
     ("profile-readme/README.md", "1st, Grand Finale", "the CTF win"),
     ("cv/Sushant_Poudel_CV.md", "won the Grand Finale", "the CTF win"),
-    ("cv/Sushant_Poudel_CV.html", "won the eight-team Grand Finale", "the CTF win"),
+    # 2026-10-26: Sushant_Poudel_CV.html is no longer hand-written -- build_cv.py renders it
+    # (and the PDF) from Sushant_Poudel_CV.md, so the two cannot drift and a rule demanding
+    # different wording in each is unsatisfiable by construction. The assertion follows the
+    # phrasing of the source it is now generated from; it still fails if the win is deleted.
+    ("cv/Sushant_Poudel_CV.html", "won the Grand Finale", "the CTF win"),
     ("cv/Sushant_Poudel_CV_AISecurity.html", "won the eight-team Grand Finale", "the CTF win"),
     ("cv/Sushant_Poudel_University_Resume.html", "won the eight-team Grand Finale", "the CTF win"),
     ("hire/index.html", "1st place, NullOrigin CTF 2026 Grand Finale", "the CTF win"),
