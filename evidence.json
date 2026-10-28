@@ -339,7 +339,7 @@
         "method": "public_repo_exists"
       },
       "metrics": [
-        "90 tests",
+        "97 tests",
         "stdlib only",
         "CI on Python 3.11-3.13",
         "11 checks",
