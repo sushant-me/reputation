@@ -597,6 +597,19 @@ def main() -> int:
         if core:
             print(f"api budget        : {core.get('remaining')} of "
                   f"{core.get('limit')} core requests left this hour")
+            # A complete scan needs about one request per candidate file plus one per
+            # repository. Starting one that cannot finish burns whatever is left and only
+            # then fails, forty minutes later, with a message about the budget - which on a
+            # badge is indistinguishable from a finding. Refuse immediately instead, and say
+            # which number is short.
+            needed = MAX_FILE_FETCHES + 200
+            remaining = core.get("remaining")
+            if isinstance(remaining, int) and remaining < needed:
+                print(f"::error::only {remaining} core requests are left this hour, and a")
+                print(f"         complete scan needs about {needed}. Another run in this hour")
+                print("         spent the budget. This is not a finding and no repository was")
+                print("         scanned: re-run once the hourly window resets.")
+                return 1
     repos = owned_repos()
     if args.repo:
         repos = [r for r in repos if r["name"] in set(args.repo)]
