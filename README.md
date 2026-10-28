@@ -26,6 +26,11 @@ python3 verify_evidence.py --json     # same, machine-readable
 python3 check_surfaces.py             # the pages a reader reaches
 python3 check_surfaces.py --require-all   # ...including the CVs and job-kit, on the workstation
 python3 check_links.py                # every external link on those pages still resolves
+python3 check_writeups_index.py       # every post is in the index, and every row is a post
+python3 check_writeups_index.py --self-test
+python3 check_loops.py                # OPEN-LOOPS rows that describe a world that has moved on
+python3 check_actions.py              # the profile's "four tools are Actions" claim is true
+python3 check_actions.py --self-test
 python3 check_secrets.py --self-test  # the credential detector fires on a known leak
 python3 check_secrets.py              # ...then scans every owned repository
 ```
@@ -45,7 +50,7 @@ verified, and editing the comment takes the claim down with it.
 It exits non-zero the moment a claim stops being true, so a stale claim cannot
 sit here quietly: this README's badge goes red first.
 
-## The credential scan, and its one open finding
+## The credential scan, and what it can and cannot tell you
 
 GitHub's free secret scanning matches **provider** patterns — AWS `AKIA…`, GitHub
 `ghp_…`, Stripe `sk_live_…`. A plain `KEY = "value"` assignment is not one of
@@ -54,18 +59,31 @@ is part of paid Secret Protection: setting it through the API is accepted and
 silently ignored, and it reads back `disabled`.
 
 For fifteen months, then, the platform reported a clean account while
-`sentiment-analysis` — public, and since archived — carried a live Twitter/X
+`sentiment-analysis` — public — carried a live Twitter/X
 OAuth set in a file called `api key.txt`: consumer key, consumer secret, access
 token and access-token secret. The `secret-scanning/alerts` endpoint returned
 `[]` for that repository, which is correct behaviour and not a safe answer.
 
-`check_secrets.py` closes that gap from outside. **The scan is red on purpose,
-and that is the honest state:**
+`check_secrets.py` closes that gap from outside, and **the scan is green today**.
+That is a narrower statement than it sounds, so here is exactly what it covers and
+what it does not:
 
-- the four credentials **have not been rotated**, and rotation is the only real
-  remediation — the blob is public, and deleting the file does not un-publish it;
-- the repository is **archived**, so it is read-only and GitHub rejects the
-  delete over the API: it needs unarchiving first.
+- It says that no credential-shaped value matching its rules sits in a public
+  repository of this account right now. Its self-test is built on the original
+  leak shape, so the class it was written for is the class it can see.
+- It does **not** say the four credentials were rotated. Nothing public records a
+  rotation, so this repository cannot check one — and rotation is the only real
+  remediation, because the blob was public and hiding it does not un-publish it.
+- It does **not** say the account is clean historically. Two repositories still
+  carried credential-shaped values when this cycle started; they were made
+  private, which removes them from the scan (private repositories are out of
+  scope by design) without removing the values from anywhere they were copied.
+
+So: the scan answers "is anything exposed now", and the answer is no. The open
+item is rotation, and it stays open until the account owner says otherwise. This
+paragraph was itself wrong for a while — it described a permanently red scan and
+an archived repository that had since been unarchived — which is the same failure
+the rest of this repository exists to catch, in prose rather than in code.
 
 It is built to fail loudly rather than quietly. There is a coverage floor, since
 a scan that read nothing must not look like a clean account; every reported value
