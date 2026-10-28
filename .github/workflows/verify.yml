@@ -187,6 +187,19 @@ jobs:
       # among the missing, and every link in the table resolved the entire time,
       # so check_links.py could not see it. This compares the directory to the
       # table instead of reading the table on its own.
+      # The one claim on the profile that is not a number: four tools are composite GitHub
+      # Actions at `@v1`. A reader acts on it by pasting `uses:` into their workflow, so a
+      # tag that moved without the file, or a renamed repository, sends them to a red step
+      # for a reason that is not their code. Same rule as every other claim here: if it can
+      # stop being true while nothing is pushed, something has to look at it weekly.
+      - name: The Action claim on the profile is true
+        run: python3 reputation/check_actions.py
+
+      # And the guard on that guard: a passing check looks exactly like a clean estate, so
+      # the checker is fed a claim whose tools have no action and must go red.
+      - name: The Action guard fires on a stale claim
+        run: python3 reputation/check_actions.py --self-test
+
       - name: Check that every post is listed in the writeups index
         run: python3 reputation/check_writeups_index.py
 
