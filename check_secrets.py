@@ -91,9 +91,26 @@ MIN_FILES_READ = 25
 # tool-boundary-corpus, writeups, Portfolio). The value below sits above the
 # measured need with headroom; if the estate outgrows it the run fails rather than
 # quietly narrowing its own coverage.
-MAX_FILES_PER_REPO = 40
+#
+# Re-measured 2026-10-29, and the same class of bug was still present in two
+# places the first fix did not reach:
+#
+#   * `MAX_FILES_PER_REPO = 40` silently cut 13 of the 83 readable repositories,
+#     dropping 2,042 candidate files that were never opened (the worst single
+#     repository lost 578). The global cap was made fatal; this one was not.
+#   * the line printed as "repositories read" was actually
+#     `len({f.repo for f in findings})` - the number of repositories that HAD a
+#     finding. It read `2` while 1,240 files had been read, and it read `n/a` on
+#     a clean scan, so the one number on the page that described coverage
+#     described findings instead.
+#
+# A complete scan of this account now needs 3,301 file reads across 87 public
+# repositories, so both caps sit above that with headroom, the per-repo cut is
+# reported and fatal exactly like the global one, and coverage and findings are
+# printed as two separate numbers.
+MAX_FILES_PER_REPO = 800
 MAX_CONTENT_BYTES = 256 * 1024
-MAX_FILE_FETCHES = 2500
+MAX_FILE_FETCHES = 3600
 
 # Names that suggest a file could carry a credential.
 SUSPICIOUS_NAME = re.compile(
@@ -366,10 +383,17 @@ def owned_repos() -> list[dict]:
     return [r for r in repos if not r.get("fork")]
 
 
-def candidate_paths(repo: str) -> list[str]:
+def candidate_paths(repo: str) -> tuple[list[str], int]:
+    """Return (paths to read, how many candidates this repository has in total).
+
+    The second number exists so the caller can tell whether the per-repo cap
+    bit. Returning only the capped list is what made the truncation invisible:
+    a repository cut from 618 files to 40 looked exactly like a repository with
+    40 files.
+    """
     tree = api_get(f"{API}/repos/{OWNER}/{repo}/git/trees/HEAD?recursive=1")
     if not isinstance(tree, dict):
-        return []
+        return [], 0
     out: list[str] = []
     for node in tree.get("tree", []):
         if node.get("type") != "blob":
@@ -385,7 +409,7 @@ def candidate_paths(repo: str) -> list[str]:
             out.append(path)
     # Suspicious names first: they are the ones worth the API budget.
     out.sort(key=lambda p: (0 if SUSPICIOUS_NAME.search(p) else 1, len(p)))
-    return out[:MAX_FILES_PER_REPO]
+    return out[:MAX_FILES_PER_REPO], len(out)
 
 
 def read_file(repo: str, path: str) -> str | None:
@@ -468,6 +492,35 @@ CLEAN_FIXTURES = [
 ]
 
 
+def truncation_note(name: str, shown: int, total: int) -> str | None:
+    """The per-repo truncation line, or None when nothing was cut.
+
+    Extracted so the self-test can watch it fire. The defect this replaces was a
+    cap that cut 13 repositories without saying so, and a guard nobody has seen
+    fire is how that survives.
+    """
+    if total > shown:
+        return f"{name} ({shown} of {total} candidate files read)"
+    return None
+
+
+def coverage_lines(read_count: int, read_repos: int, total_repos: int,
+                   finding_repos: int | None) -> list[str]:
+    """The numbers a reader uses to judge whether the scan covered the estate.
+
+    The line printed here used to be described as "repositories read" while
+    actually counting the repositories that HAD a finding - so it read `2` when
+    1,240 files had been read, and `n/a` on a clean scan.
+    """
+    lines = [
+        f"files read        : {read_count}",
+        f"repositories read : {read_repos} of {total_repos}",
+    ]
+    if finding_repos is not None:
+        lines.append(f"repos w/ findings : {finding_repos}")
+    return lines
+
+
 def self_test() -> int:
     print("self-test: the detector must fire on the original leak shape\n")
     fails = 0
@@ -486,6 +539,27 @@ def self_test() -> int:
         ok = not got
         print(f"  {'ok  ' if ok else 'FAIL'}  stays silent on: {fx}")
         fails += 0 if ok else 1
+
+    print()
+    # Both defects fixed on 2026-10-29 were "a number that nothing recomputes", so
+    # both numbers now have something that does.
+    note = truncation_note("cut-repo", 40, 618)
+    ok = note is not None and "40 of 618" in note
+    print(f"  {'ok  ' if ok else 'FAIL'}  reports a per-repo cut as 40 of 618")
+    fails += 0 if ok else 1
+
+    ok = truncation_note("full-repo", 40, 40) is None
+    print(f"  {'ok  ' if ok else 'FAIL'}  stays silent when nothing was cut")
+    fails += 0 if ok else 1
+
+    lines = coverage_lines(1240, 83, 87, None)
+    ok = lines[1] == "repositories read : 83 of 87" and not any("n/a" in l for l in lines)
+    print(f"  {'ok  ' if ok else 'FAIL'}  coverage counts repositories read, not findings")
+    fails += 0 if ok else 1
+
+    ok = coverage_lines(10, 2, 87, 2)[-1] == "repos w/ findings : 2"
+    print(f"  {'ok  ' if ok else 'FAIL'}  findings are counted separately from coverage")
+    fails += 0 if ok else 1
 
     print()
     if fails:
@@ -549,11 +623,16 @@ def main() -> int:
     print("assumed clean; the file count below is what the run actually read\n")
     findings: list[Finding] = []
     read_count = 0
+    read_repos: set[str] = set()
+    truncated: list[str] = []
     skipped: list[str] = []
 
     for r in sorted(repos, key=lambda x: x["name"]):
         name = r["name"]
-        paths = candidate_paths(name)
+        paths, total_candidates = candidate_paths(name)
+        note = truncation_note(name, len(paths), total_candidates)
+        if note:
+            truncated.append(note)
         if not paths:
             continue
         for path in paths:
@@ -565,6 +644,7 @@ def main() -> int:
             if text is None:
                 continue
             read_count += 1
+            read_repos.add(name)
             if why:
                 hits = scan_text(name, path, text)
                 if hits:
@@ -575,8 +655,11 @@ def main() -> int:
             findings.extend(scan_text(name, path, text))
 
     print()
-    print(f"files read        : {read_count}")
-    print(f"repositories read : {len({f.repo for f in findings}) if findings else 'n/a'}")
+    for line in coverage_lines(
+        read_count, len(read_repos), len(repos),
+        len({f.repo for f in findings}) if findings else None,
+    ):
+        print(line)
     if EMPTY_PATHS:
         print(f"empty repositories: {len(EMPTY_PATHS)} (no commits; nothing to scan)")
     if RATE_LIMITED:
@@ -586,9 +669,14 @@ def main() -> int:
         for failure in READ_FAILURES[:5]:
             print(f"    - {failure}")
     if skipped:
-        print(f"truncated         : {len(skipped)} repo(s)")
+        print(f"truncated (global): {len(skipped)} repo(s)")
         for s in skipped:
             print(f"    - {s}")
+    if truncated:
+        print(f"truncated (per-repo): {len(truncated)} repo(s) hit the "
+              f"{MAX_FILES_PER_REPO}-file cap")
+        for t in truncated:
+            print(f"    - {t}")
     print()
 
     if findings:
@@ -651,6 +739,21 @@ def main() -> int:
         print("         a partial scan is not evidence of a clean account. Raise")
         print(f"         MAX_FILE_FETCHES (currently {MAX_FILE_FETCHES}) above the estate's")
         print("         real size rather than reading this as green.")
+        return 1
+
+    # The per-repo cap is the same failure as the global one, one repository at a
+    # time, and it was the silent half for longer: 13 repositories were cut and
+    # the run still said "no credential-shaped values found". A cap that bites is
+    # a hole in the estate, so it fails here too.
+    if truncated:
+        print(f"::error::{len(truncated)} repository(ies) had candidate files cut by the")
+        print(f"         per-repo cap ({MAX_FILES_PER_REPO}):")
+        for t in truncated:
+            print(f"           - {t}")
+        print("         a partial scan is not evidence of a clean account. Raise")
+        print(f"         MAX_FILES_PER_REPO (currently {MAX_FILES_PER_REPO}) above the")
+        print("         largest repository's candidate count rather than reading this")
+        print("         as green.")
         return 1
 
     print("no credential-shaped values found in public repositories")
