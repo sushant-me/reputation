@@ -66,6 +66,7 @@ import math
 import os
 import re
 import sys
+from datetime import datetime, timezone
 import time
 import urllib.error
 import urllib.parse
@@ -595,8 +596,16 @@ def main() -> int:
     if isinstance(budget, dict):
         core = (budget.get("resources") or {}).get("core") or {}
         if core:
+            reset = core.get("reset")
+            when = ""
+            if isinstance(reset, int):
+                # The reset timestamp is the one piece of information that turns "the budget
+                # is gone" into "run it again at 21:47". Printing it costs nothing and stops
+                # the next person from probing blindly.
+                when = (f" (resets {datetime.fromtimestamp(reset, timezone.utc):%H:%M} UTC, "
+                        f"in {max(0, int((reset - time.time()) / 60))} min)")
             print(f"api budget        : {core.get('remaining')} of "
-                  f"{core.get('limit')} core requests left this hour")
+                  f"{core.get('limit')} core requests left this hour{when}")
             # A complete scan needs about one request per candidate file plus one per
             # repository. Starting one that cannot finish burns whatever is left and only
             # then fails, forty minutes later, with a message about the budget - which on a
@@ -608,7 +617,12 @@ def main() -> int:
                 print(f"::error::only {remaining} core requests are left this hour, and a")
                 print(f"         complete scan needs about {needed}. Another run in this hour")
                 print("         spent the budget. This is not a finding and no repository was")
-                print("         scanned: re-run once the hourly window resets.")
+                reset = core.get("reset")
+                if isinstance(reset, int):
+                    print(f"         scanned. Re-run after "
+                          f"{datetime.fromtimestamp(reset, timezone.utc):%H:%M} UTC.")
+                else:
+                    print("         scanned: re-run once the hourly window resets.")
                 return 1
     repos = owned_repos()
     if args.repo:
