@@ -152,6 +152,22 @@ VERSION_CHECKED = [
     "reputation/README.md",
 ]
 
+#: Every tool README must carry an install line pinned to the release it is describing.
+#:
+#: The line is what a reader copies, so a pin that lags a release installs old code while the
+#: page above it says "current" - the same failure the landing page's check exists for, one
+#: repository further in. Nothing here was watching it: policygate's Status section still said
+#: v0.1.0 a release later, and the corpus README had no install line at all. Both were found by
+#: writing this rule, which is the argument for writing it.
+INSTALL_PINNED = (
+    "agentbound",
+    "mcpaudit",
+    "policygate",
+    "mcp-nameguard",
+    "trajectorycheck",
+    "tool-boundary-corpus",
+)
+
 # A string that was published and was wrong. Each entry says why it is wrong, so
 # the failure message is an explanation rather than a rule number.
 FORBIDDEN = {
@@ -929,6 +945,46 @@ def as_int(token: str) -> int:
     return int(token.replace(",", ""))
 
 
+def install_pins_match(files: list[pathlib.Path]) -> tuple[list[str], int]:
+    """Each tool README's pinned install line must name the latest release."""
+    problems: list[str] = []
+    checked = 0
+    by_repo = {path.parent.name: path for path in files if path.name == "README.md"}
+    for repo in INSTALL_PINNED:
+        path = by_repo.get(repo)
+        if path is None:
+            continue  # not in this checkout; the surface report already says so
+        text = read(path)
+        matches = re.findall(
+            rf"git\+https://github\.com/sushant-me/{re.escape(repo)}\.git@v([0-9][0-9.]*)", text)
+        if not matches:
+            problems.append(
+                f"{repo}/README.md: no pinned install line - a reader cannot install this "
+                f"from the README")
+            continue
+        checked += 1
+        pin = matches[0]
+        actual = latest_release(repo)
+        if actual is None:
+            problems.append(f"{repo}/README.md: cannot read the latest release of {repo}")
+            continue
+        if actual != f"v{pin}":
+            problems.append(
+                f"{repo}/README.md: install line pins v{pin}, but the latest release is {actual}")
+
+        # The install line and the Status section drift separately - policygate's pin was
+        # correct while the line under "## Status" said v0.1.0 a release later, which is how
+        # this second assertion came to be written.
+        status = re.search(r"^## Status\s*\n+(.*?)(?:\n## |\Z)", text, re.S | re.M)
+        if status:
+            stated = re.search(r"`v([0-9][0-9.]*)`", status.group(1))
+            if stated and f"v{stated.group(1)}" != actual:
+                problems.append(
+                    f"{repo}/README.md: Status section says v{stated.group(1)}, "
+                    f"but the latest release is {actual}")
+    return problems, checked
+
+
 def latest_release(repo: str) -> str | None:
     try:
         out = subprocess.run(
@@ -1259,6 +1315,10 @@ def main(argv: list[str] | None = None) -> int:
                 problems.append(
                     f"{path.name}: links {repo} v{label}, but the latest release is {actual}")
 
+    # 8. Each tool README's install line must name the release it describes.
+    pin_problems, pins_checked = install_pins_match(files)
+    problems.extend(pin_problems)
+
     payload = {
         "surfaces_present": len(files),
         "declarations_matched": len(SURFACES) - len(missing_globs),
@@ -1266,6 +1326,7 @@ def main(argv: list[str] | None = None) -> int:
         "forbidden_rules": len(FORBIDDEN),
         "required_rules": len(REQUIRED),
         "version_links_checked": version_links,
+        "install_pins_checked": pins_checked,
         "live_pages_checked": live_checked,
         "counts_checked": counts_checked,
         "problems": problems,
@@ -1280,6 +1341,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"forbidden strings:       {len(FORBIDDEN)} rules")
         print(f"required strings:        {len(REQUIRED)} assertions")
         print(f"release links checked:   {version_links}")
+        print(f"install pins checked:    {pins_checked}")
         print(f"live pages checked:      {live_checked} assertions on {len(LIVE_SITES)} pages")
         print(f"prose counts checked:    {counts_checked} "
               f"(truth: {truth['claims']} claims, {truth['checked_live']} live, "
