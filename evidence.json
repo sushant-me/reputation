@@ -310,7 +310,7 @@
       "id": "tool-boundary-corpus",
       "category": "open-source",
       "claim": "tool-boundary-corpus - a labelled corpus of agent tool-boundary cases and a detector-agnostic harness that scores precision and recall",
-      "detail": "23 cases (14 tool-list declarations, 5 framework-code, 4 declaration-drift) with positives citing where each pattern came from in the real world and negatives that are the correct implementation of the same job. Detectors are commands that print JSON, so any scanner can be scored. A drift case carries two states of the same server, because a declaration edited after approval -- the rug-pull shape -- cannot be expressed as one payload. Measured: mcpaudit P=1.000 R=1.000 on tool-list and on drift; agentbound P=1.000 R=1.000 on code, up from 0.750 when the corpus found a false positive it reported (a pattern inside a string bound to a name) -- agentbound v0.1.10 fixed it and the same harness re-measured the improvement. The harness is itself tested with fake detectors (perfect, silent, trigger-happy, crashing, malformed JSON), and the corpus is self-authored, which every report states.",
+      "detail": "24 cases (14 tool-list declarations, 6 framework-code, 4 declaration-drift) with positives citing where each pattern came from in the real world and negatives that are the correct implementation of the same job. Detectors are commands that print JSON, so any scanner can be scored. A drift case carries two states of the same server, because a declaration edited after approval -- the rug-pull shape -- cannot be expressed as one payload. Measured: mcpaudit P=1.000 R=1.000 on tool-list and on drift; agentbound P=1.000 R=1.000 on code, up from 0.750 when the corpus found a false positive it reported (a pattern inside a string bound to a name) -- agentbound v0.1.10 fixed it and the same harness re-measured the improvement. The harness is itself tested with fake detectors (perfect, silent, trigger-happy, crashing, malformed JSON), and the corpus is self-authored, which every report states.",
       "source": {
         "kind": "public_repo",
         "url": "https://github.com/sushant-me/tool-boundary-corpus"
@@ -319,7 +319,7 @@
         "method": "public_repo_exists"
       },
       "metrics": [
-        "23 cases",
+        "24 cases",
         "P/R measured for 2 detectors",
         "found a real false positive that was then fixed",
         "CI on 3.11-3.13",
@@ -381,7 +381,7 @@
         }
       },
       "metrics": [
-        "140 tests",
+        "142 tests",
         "CI on Python 3.9, 3.11 and 3.13",
         "10 registered detectors"
       ]

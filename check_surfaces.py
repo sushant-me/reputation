@@ -366,7 +366,7 @@ REQUIRED: list[tuple[str, str, str]] = [
     ("cv/Sushant_Poudel_CV_AISecurity.html", "won the eight-team Grand Finale", "the CTF win"),
     ("cv/Sushant_Poudel_University_Resume.html", "won the eight-team Grand Finale", "the CTF win"),
     ("hire/index.html", "1st place, NullOrigin CTF 2026 Grand Finale", "the CTF win"),
-    ("profile-readme/README.md", "23 agent tool-boundary cases", "the corpus count"),
+    ("profile-readme/README.md", "24 agent tool-boundary cases", "the corpus count"),
     # CORRECTED 30 Sep 2026. This assertion REQUIRED the over-claim: it demanded the exact
     # phrasing "23 labelled agent tool-boundary cases", which read as though the scanner is
     # scored on all 23. It is scored on 5; the other 18 exercise a second tool. So the guard
@@ -374,10 +374,10 @@ REQUIRED: list[tuple[str, str, str]] = [
     # page was fixed -- with the message "a fix by deletion is not a fix", which cannot tell a
     # correction from a deletion. Now it requires the corrected phrasing.
     ("hire/index.html", "5 of which score my scanner", "the corpus attribution"),
-    ("reputation/OPEN-LOOPS.md", "23 labelled cases", "the corpus count"),
-    ("job-kit/PROPOSAL.md", "23 labelled cases", "the corpus count"),
+    ("reputation/OPEN-LOOPS.md", "24 labelled cases", "the corpus count"),
+    ("job-kit/PROPOSAL.md", "24 labelled cases", "the corpus count"),
     ("job-kit/PROPOSAL.md", "Grow the 23 self-authored cases", "the corpus count"),
-    ("job-kit/LAUNCH-POSTS.md", "23 agent tool-boundary cases", "the corpus count"),
+    ("job-kit/LAUNCH-POSTS.md", "24 agent tool-boundary cases", "the corpus count"),
     ("job-kit/outbox.json", "23 agent tool-boundary cases", "the corpus count"),
     ("writeups/2026-09-21-a-benchmark-found-a-bug-in-my-own-detector.md",
      "declaration scanner) — 14 cases", "the tool-list subset count"),
